@@ -1,0 +1,67 @@
+:root {
+  --lala-button-bg: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  --lala-hover-bg: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+}
+
+.lalachievements-button-container {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.lalachievements-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--lala-button-bg);
+  color: white !important;
+  text-decoration: none !important;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(217, 119, 6, 0.3);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(4px);
+}
+
+.lalachievements-button:hover {
+  background: var(--lala-hover-bg);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(217, 119, 6, 0.4);
+}
+
+.lalachievements-button::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    to bottom right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0) 60%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(45deg);
+  transition: all 0.3s;
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-150%) rotate(45deg); }
+  100% { transform: translateX(150%) rotate(45deg); }
+}
+
+.fflogs-button-icon {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
