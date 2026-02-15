@@ -96,7 +96,7 @@
         right: 0;
         bottom: 0;
         background-color: #cbd5e1;
-        transition: .4s;
+        transition: 0.4s;
         border-radius: 24px;
       }
       .slider:before {
@@ -107,7 +107,7 @@
         left: 3px;
         bottom: 3px;
         background-color: white;
-        transition: .4s;
+        transition: 0.4s;
         border-radius: 50%;
       }
       input:checked + .slider {
@@ -171,7 +171,8 @@
       <h1>⚙️ 拡張機能の設定</h1>
       <div id="fflogs-feature" class="hidden-feature">
         <div class="description">
-          「Best %」の表示や、FFLogs / Tomestone ボタンを有効にするには、こちらの設定を行ってください。
+          「Best %」の表示や、FFLogs / Tomestone
+          ボタンを有効にするには、こちらの設定を行ってください。
           <br />
           <a href="https://www.fflogs.com/profile" target="_blank"
             >FFLogsのプロフィール</a
@@ -194,14 +195,14 @@
             <div class="toggle-item">
               <span class="toggle-label">FFLogs ボタン</span>
               <label class="switch">
-                <input type="checkbox" id="showFFLogs">
+                <input type="checkbox" id="showFFLogs" />
                 <span class="slider"></span>
               </label>
             </div>
             <div class="toggle-item">
               <span class="toggle-label">Tomestone ボタン</span>
               <label class="switch">
-                <input type="checkbox" id="showTomestone">
+                <input type="checkbox" id="showTomestone" />
                 <span class="slider"></span>
               </label>
             </div>
@@ -215,7 +216,7 @@
           <div class="toggle-item">
             <span class="toggle-label">Achievements ボタン</span>
             <label class="switch">
-              <input type="checkbox" id="showLalachievements" checked>
+              <input type="checkbox" id="showLalachievements" checked />
               <span class="slider"></span>
             </label>
           </div>
@@ -227,7 +228,9 @@
       <div id="status" class="status"></div>
     </div>
 
-    <div class="footer">FFLogs Lodestone Link Extension <span id="version">v2.0.0</span></div>
+    <div class="footer">
+      FFLogs Lodestone Link Extension <span id="version">v2.0.0</span>
+    </div>
 
     <script src="options.js"></script>
   </body>
