@@ -135,24 +135,28 @@
       const commonQuery = `metric=rdps&api_key=${apiKey}`;
       const rankingUrl = `https://www.fflogs.com/v1/rankings/character/${encodeURIComponent(characterName)}/${encodeURIComponent(serverName)}/${region}?${commonQuery}`;
       const histParseUrl = `https://www.fflogs.com/v1/parses/character/${encodeURIComponent(characterName)}/${encodeURIComponent(serverName)}/${region}?timeframe=historical&${commonQuery}`;
+      const zonesUrl = `https://www.fflogs.com/v1/zones?api_key=${apiKey}`;
       
-      const [rankingRes, histParseRes] = await Promise.all([
+      // 全てのデータを並列で取得。ただし zones の失敗で全体が止まらないよう個別ハンドリング
+      const [rankingRes, histParseRes, zonesData] = await Promise.all([
         fetch(rankingUrl),
-        fetch(histParseUrl)
+        fetch(histParseUrl),
+        fetch(zonesUrl).then(res => res.ok ? res.json() : null).catch(() => null)
       ]);
       
-      if (!rankingRes.ok || !histParseRes.ok) throw new Error('API request failed');
+      if (!rankingRes.ok || !histParseRes.ok) throw new Error('Ranking or Parse API request failed');
       
       const rankingData = await rankingRes.json();
       const histParseData = await histParseRes.json();
 
-      if (!rankingData || !Array.isArray(rankingData) || rankingData.length === 0) return null;
+      if (!rankingData || !Array.isArray(rankingData)) return null;
 
       // 1. 最新の「零式(Difficulty: 101)」レイドティアを探す
       let targetZoneId = -1;
       let targetZoneName = '';
       let hasSavage = false;
 
+      // RankingデータからZoneIdを探す
       rankingData.forEach(entry => {
         const isSavage = entry.difficulty === 101;
         if (isSavage) {
@@ -173,43 +177,102 @@
         });
       }
 
-      // 2. 特定したZoneの各ボスの数値を抽出
-      const encounterMap = {};
-      
-      // parsesデータから Historical Best を抽出
-      histParseData.forEach(entry => {
-        if (entry.zoneID === targetZoneId) {
-          if (hasSavage && entry.difficulty !== 101) return;
-          const encId = entry.encounterID;
-          if (!encounterMap[encId] || entry.percentile > encounterMap[encId].historical) {
-            encounterMap[encId] = {
-              name: entry.encounterName,
-              historical: entry.percentile,
-              id: encId
-            };
+      // Rankingデータから取得できなかった場合（未使用の最新コンテンツ等）、Parseデータから探す
+      if (targetZoneId === -1 && Array.isArray(histParseData)) {
+        histParseData.forEach(entry => {
+          if (entry.zoneID > targetZoneId) {
+            targetZoneId = entry.zoneID;
+            targetZoneName = entry.zoneName;
+          }
+        });
+      }
+
+      if (targetZoneId === -1) return null;
+
+      // 2. ゾーン内の全エンカウンター定義を取得
+      let targetZone = null;
+      if (Array.isArray(zonesData)) {
+        // v1/zones は拡張パッケージ(Expansions)の配列の中に zones が入っている場合があるため、再帰的に探す
+        for (const item of zonesData) {
+          if (item.id === targetZoneId && (item.encounters || item.zones)) {
+            targetZone = item;
+            break;
+          }
+          if (item.zones && Array.isArray(item.zones)) {
+            const found = item.zones.find(z => z.id === targetZoneId);
+            if (found) {
+              targetZone = found;
+              break;
+            }
           }
         }
-      });
+      }
 
-      // 3. ボスをID順にソートし、結果を整形
-      const sortedEncounters = Object.values(encounterMap).sort((a, b) => a.id - b.id);
-      const results = sortedEncounters.map((enc, index) => {
-        let label = `${index + 1}`;
-        if (sortedEncounters.length === 5 && index === 4) {
-          label = "4後";
-        }
+      // 3. 特定したZoneの各ボスの数値を抽出
+      const encounterMap = {};
+      if (Array.isArray(histParseData)) {
+        histParseData.forEach(entry => {
+          if (entry.zoneID === targetZoneId) {
+            if (hasSavage && entry.difficulty !== 101) return;
+            const encId = entry.encounterID;
+            if (!encounterMap[encId] || entry.percentile > encounterMap[encId].historical) {
+              encounterMap[encId] = {
+                name: entry.encounterName,
+                historical: entry.percentile,
+                id: encId
+              };
+            }
+          }
+        });
+      }
+
+      // 4. マッピング
+      const results = [];
+      if (targetZone && targetZone.encounters) {
+        // 完璧なマッピング（定義リストに基づく）
+        const zoneEncounters = targetZone.encounters.sort((a, b) => a.id - b.id);
+        zoneEncounters.forEach((def, index) => {
+          const recorded = encounterMap[def.id];
+          let label = `${index + 1}`;
+          if (zoneEncounters.length === 5 && index === 4) label = "4後";
+          
+          results.push({
+            label: label,
+            fullName: recorded ? recorded.name : def.name,
+            historical: recorded ? Math.floor(recorded.historical) : '-'
+          });
+        });
+      } else {
+        // フォールバック: IDの最小値からの差分で階層を推測
+        const sortedEncounters = Object.values(encounterMap).sort((a, b) => a.id - b.id);
         
-        return {
-          label: label,
-          fullName: enc.name,
-          historical: Math.floor(enc.historical)
-        };
-      });
+        // ログがあるものから最大階層を推測（通常は4層、前後編で5）
+        let maxIndex = 3; // デフォルト4層分
+        if (sortedEncounters.length > 0) {
+          const minId = sortedEncounters[0].id;
+          const lastId = sortedEncounters[sortedEncounters.length - 1].id;
+          maxIndex = Math.max(3, lastId - minId);
+        }
+
+        for (let i = 0; i <= maxIndex; i++) {
+          const minId = sortedEncounters.length > 0 ? sortedEncounters[0].id : 0;
+          const recorded = sortedEncounters.find(enc => enc.id === minId + i);
+          
+          let label = `${i + 1}`;
+          if (i === 4) label = "4後";
+          
+          results.push({
+            label: label,
+            fullName: recorded ? recorded.name : `第${i + 1}ステージ`,
+            historical: recorded ? Math.floor(recorded.historical) : '-'
+          });
+        }
+      }
 
       if (results.length === 0) return null;
       
       return {
-        zoneName: targetZoneName || '最新コンテンツ',
+        zoneName: targetZoneName || (targetZone ? targetZone.name : '最新コンテンツ'),
         encounters: results
       };
     } catch (error) {
