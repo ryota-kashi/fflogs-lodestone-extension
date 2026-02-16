@@ -119,6 +119,123 @@
     return button;
   }
 
+  // xivanalysisボタンを作成
+  function createXivAnalysisButton(reportId, fightId) {
+    const button = document.createElement('a');
+    button.className = 'xivanalysis-button';
+    
+    // SVGアイコン (Analysis/Lightning)
+    const svgIcon = `
+      <svg class="fflogs-button-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+      </svg>
+    `;
+
+    button.innerHTML = `${svgIcon}<span>xivanalysis</span>`;
+    button.title = `このレポートをxivanalysisで分析`;
+    
+    // xivanalysisのURL形式 (https://xivanalysis.com/fflogs/{reportId}/{fightId})
+    const analysisUrl = `https://xivanalysis.com/fflogs/${reportId}/${fightId}`;
+    button.href = analysisUrl;
+    button.target = '_blank';
+    button.rel = 'noopener noreferrer';
+    
+    return button;
+  }
+
+  // FFLogsレポートページからレポートIDとファイトIDを取得
+  function getFFLogsIds() {
+    const pathParts = window.location.pathname.split('/');
+    const reportIndex = pathParts.indexOf('reports');
+    if (reportIndex === -1 || reportIndex + 1 >= pathParts.length) return null;
+    
+    const reportId = pathParts[reportIndex + 1];
+    const urlParams = new URLSearchParams(window.location.search);
+    const fightId = urlParams.get('fight') || 'last'; // デフォルトは last
+    
+    return { reportId, fightId };
+  }
+
+  // FFLogsのレポートメニューにボタンを挿入
+  function insertFFLogsxivanalysisButton() {
+    console.log('FFLogs Extension: Attempting to insert xivanalysis button');
+    
+    // 既にボタンが存在する場合は更新のみ
+    const existingButton = document.querySelector('.xivanalysis-button');
+    const ids = getFFLogsIds();
+    if (!ids) {
+      console.log('FFLogs Extension: Could not get report/fight IDs');
+      return;
+    }
+
+    if (existingButton) {
+      const newUrl = `https://xivanalysis.com/fflogs/${ids.reportId}/${ids.fightId}`;
+      if (existingButton.href !== newUrl) {
+        console.log('FFLogs Extension: Updating existing button URL to', newUrl);
+        existingButton.href = newUrl;
+      }
+      return;
+    }
+
+    // 挿入先を探す (最優先はユーザーが提示したエリア付近)
+    let foundTarget = null;
+    let injectionMethod = 'afterend'; // 要素の直後に入れる
+
+    // 候補1: 戦闘切り替えエリアのコンテナ
+    foundTarget = document.querySelector('#filter-fight-and-phase');
+    if (foundTarget) {
+      console.log('FFLogs Extension: Found filter-fight-and-phase container');
+    } else {
+      // 候補2: ボス選択部分の直後
+      foundTarget = document.querySelector('#filter-fight-boss-wrapper');
+      if (foundTarget) console.log('FFLogs Extension: Found filter-fight-boss-wrapper');
+    }
+
+    // 候補3: 設定ボタン (画面右上)
+    if (!foundTarget) {
+      foundTarget = document.querySelector('#report-settings-dropdown') || 
+                    document.querySelector('.report-header-settings');
+      if (foundTarget) {
+        injectionMethod = 'beforebegin';
+        console.log('FFLogs Extension: Found Settings button');
+      }
+    }
+
+    // 候補4: 分析 (Analyze) タブ
+    if (!foundTarget) {
+      const analyzeTab = Array.from(document.querySelectorAll('a, span')).find(el => 
+        el.textContent.includes('Analyze') || el.textContent.includes('分析')
+      );
+      if (analyzeTab) {
+        foundTarget = analyzeTab.closest('li') || analyzeTab;
+        injectionMethod = 'beforebegin';
+        console.log('FFLogs Extension: Found Analyze tab');
+      }
+    }
+
+    if (!foundTarget) {
+      console.log('FFLogs Extension: No suitable target element found after all fallbacks');
+      return;
+    }
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'xivanalysis-button-wrapper';
+    wrapper.style.display = 'inline-flex';
+    wrapper.style.alignItems = 'center';
+    wrapper.style.marginLeft = '15px';
+    wrapper.style.marginRight = '10px';
+    wrapper.style.verticalAlign = 'middle';
+    wrapper.style.whiteSpace = 'nowrap';
+    wrapper.style.zIndex = '1000';
+    
+    const button = createXivAnalysisButton(ids.reportId, ids.fightId);
+    wrapper.appendChild(button);
+    
+    // 挿入
+    foundTarget.insertAdjacentElement(injectionMethod, wrapper);
+    console.log('FFLogs Extension: xivanalysis button successfully injected', injectionMethod, foundTarget.tagName, foundTarget.id || foundTarget.className);
+  }
+
   // リージョンコードを取得
   function getRegionCode() {
     const host = window.location.hostname;
@@ -426,16 +543,30 @@
   }
 
   // ページ読み込み完了後に実行
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', insertButton);
-  } else {
-    insertButton();
+  function initialize() {
+    const host = window.location.hostname;
+    if (host.includes('fflogs.com')) {
+      insertFFLogsxivanalysisButton();
+    } else if (host.includes('finalfantasyxiv.com')) {
+      insertButton();
+    }
   }
 
-  // 動的な変更を監視（SPAの場合に備えて）
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initialize);
+  } else {
+    initialize();
+  }
+
+  // 動的な変更を監視
   const observer = new MutationObserver((mutations) => {
-    if (document.querySelector('.frame__chara__name') && !document.querySelector('.fflogs-button-container')) {
-      insertButton();
+    const host = window.location.hostname;
+    if (host.includes('fflogs.com')) {
+      insertFFLogsxivanalysisButton();
+    } else if (host.includes('finalfantasyxiv.com')) {
+      if (document.querySelector('.frame__chara__name') && !document.querySelector('.fflogs-button-container')) {
+        insertButton();
+      }
     }
   });
 

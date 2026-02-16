@@ -6,7 +6,7 @@
   --fflogs-gradient: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%);
   --fflogs-glow: rgba(124, 58, 237, 0.4);
   --fflogs-text: #ffffff;
-  
+
   --tomestone-primary: #0d9488;
   --tomestone-secondary: #0891b2;
   --tomestone-gradient: linear-gradient(135deg, #0d9488 0%, #0891b2 100%);
@@ -316,9 +316,54 @@
   min-width: 20px;
 }
 
+/* xivanalysis ボタン固有のスタイル (さらに認識しやすいサイズへ) */
+.xivanalysis-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: linear-gradient(135deg, #ff4d4d 0%, #cc0000 100%);
+  color: #fff !important;
+  text-decoration: none !important;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+  vertical-align: middle;
+  z-index: 100;
+  white-space: nowrap;
+}
+
+.xivanalysis-button-wrapper {
+  display: inline-flex !important;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.xivanalysis-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(255, 77, 77, 0.3);
+  filter: brightness(1.1);
+}
+
+.xivanalysis-button:active {
+  transform: translateY(0);
+}
+
+.xivanalysis-button .fflogs-button-icon {
+  width: 12px;
+  height: 12px;
+}
+
 /* レスポンシブ */
 @media (max-width: 768px) {
-  .fflogs-button, .tomestone-button, .lalachievements-button {
+  .fflogs-button,
+  .tomestone-button,
+  .lalachievements-button {
     padding: 8px 18px;
     font-size: 13px;
     border-radius: 10px;
