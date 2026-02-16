@@ -5,7 +5,11 @@
 
   // キャラクター名を取得
   function getCharacterName() {
-    const nameElement = document.querySelector('.frame__chara__name');
+    // プロフィールページ用セレクタ
+    let nameElement = document.querySelector('.frame__chara__name');
+    // 日記ページ（サイドバー）用セレクタ
+    if (!nameElement) nameElement = document.querySelector('.entry__column__name');
+    
     if (nameElement) {
       return nameElement.textContent.trim();
     }
@@ -14,7 +18,8 @@
 
   // ロードストーンIDを取得
   function getLodestoneId() {
-    const match = window.location.pathname.match(/\/character\/(\d+)/);
+    // パスから /character/直後の数字のみを抽出する
+    const match = window.location.pathname.match(/\/character\/(\d+)(?:\/|$)/);
     return match ? match[1] : null;
   }
 
@@ -25,7 +30,11 @@
 
   // サーバー名とデータセンター名を取得
   function getServerAndDcName() {
-    const serverElement = document.querySelector('.frame__chara__world');
+    // プロフィールページ用セレクタ
+    let serverElement = document.querySelector('.frame__chara__world');
+    // 日記ページ（サイドバー）用セレクタ
+    if (!serverElement) serverElement = document.querySelector('.entry__column__world');
+
     if (serverElement) {
       const serverText = serverElement.textContent.trim();
       // "Tonberry [Elemental]" -> "Tonberry (Elemental)"
@@ -151,25 +160,63 @@
     
     const reportId = pathParts[reportIndex + 1];
     const urlParams = new URLSearchParams(window.location.search);
-    const fightId = urlParams.get('fight') || 'last'; // デフォルトは last
+    let fightId = urlParams.get('fight');
+    
+    // fight=last の場合、または fight パラメータがない場合は、DOMから実際の数値を抽出を試みる
+    if (!fightId || fightId === 'last') {
+      // 1. ページ内のリンクから数値を抽出 (Analyze タブやメニュー項目など)
+      // ?fight=last のときは「最後の戦闘」の数値 ID を探すのが最も確実
+      const links = Array.from(document.querySelectorAll('a[href*="fight="]'));
+      const fightIdNumbers = links
+        .map(link => {
+          const match = link.href.match(/[?&]fight=(\d+)/);
+          return match ? parseInt(match[1], 10) : null;
+        })
+        .filter(n => n !== null && !isNaN(n));
+
+      if (fightIdNumbers.length > 0) {
+        // 全体の最大値を「最新の戦闘」として扱う
+        fightId = Math.max(...fightIdNumbers).toString();
+      }
+
+      // 2. まだ取れない場合は戦闘選択ドロップダウンをチェック
+      if (!fightId || fightId === 'last') {
+        const fightSelect = document.querySelector('#filter-fight-and-phase .Select-input input, #fight-select');
+        if (fightSelect && fightSelect.value && !isNaN(fightSelect.value)) {
+          fightId = fightSelect.value;
+        } 
+      }
+
+      // 3. 最後の戦闘（last）の数値IDを探す (ドロップダウンの最後の項目)
+      if (!fightId || fightId === 'last') {
+        const lastFightOption = document.querySelector('#fight-select option:last-child');
+        if (lastFightOption && lastFightOption.value && !isNaN(lastFightOption.value)) {
+          fightId = lastFightOption.value;
+        }
+      }
+
+      // 4. それでも取れない場合はフォールバック
+      // ただし、xivanalysis は last を受け付けないので、可能な限り数値にしたい
+      fightId = fightId || 'last';
+    }
     
     return { reportId, fightId };
   }
 
   // FFLogsのレポートメニューにボタンを挿入
   function insertFFLogsxivanalysisButton() {
-    console.log('FFLogs Extension: Attempting to insert xivanalysis button');
+    console.log('FFLogs Extension: Attempting to insert/update xivanalysis button');
     
-    // 既にボタンが存在する場合は更新のみ
-    const existingButton = document.querySelector('.xivanalysis-button');
     const ids = getFFLogsIds();
     if (!ids) {
       console.log('FFLogs Extension: Could not get report/fight IDs');
       return;
     }
 
+    const newUrl = `https://xivanalysis.com/fflogs/${ids.reportId}/${ids.fightId}`;
+    const existingButton = document.querySelector('.xivanalysis-button');
+
     if (existingButton) {
-      const newUrl = `https://xivanalysis.com/fflogs/${ids.reportId}/${ids.fightId}`;
       if (existingButton.href !== newUrl) {
         console.log('FFLogs Extension: Updating existing button URL to', newUrl);
         existingButton.href = newUrl;
@@ -238,11 +285,23 @@
 
   // リージョンコードを取得
   function getRegionCode() {
+    // データセンター名からリージョンを判定するのが最も確実
+    const serverAndDc = getServerAndDcName();
+    if (serverAndDc) {
+      if (serverAndDc.includes('Elemental') || serverAndDc.includes('Gaia') || 
+          serverAndDc.includes('Mana') || serverAndDc.includes('Meteor')) return 'JP';
+      if (serverAndDc.includes('Aether') || serverAndDc.includes('Primal') || 
+          serverAndDc.includes('Crystal') || serverAndDc.includes('Dynamis')) return 'NA';
+      if (serverAndDc.includes('Chaos') || serverAndDc.includes('Light')) return 'EU';
+      if (serverAndDc.includes('Materia')) return 'OC';
+    }
+
+    // フォールバック: ホスト名から判定
     const host = window.location.hostname;
     if (host.startsWith('na.')) return 'NA';
     if (host.startsWith('eu.')) return 'EU';
     if (host.startsWith('de.') || host.startsWith('fr.')) return 'EU';
-    return 'JP';
+    return 'JP'; // デフォルトはJP
   }
 
   // FFLogsから最新のランキングデータを取得
@@ -261,7 +320,15 @@
         fetch(zonesUrl).then(res => res.ok ? res.json() : null).catch(() => null)
       ]);
       
-      if (!rankingRes.ok || !histParseRes.ok) throw new Error('Ranking or Parse API request failed');
+      if (!rankingRes.ok || !histParseRes.ok) {
+        console.error('FFLogs API Error Details:', {
+          rankingStatus: rankingRes.status,
+          rankingUrl: rankingUrl,
+          parseStatus: histParseRes.ok ? 200 : histParseRes.status,
+          parseUrl: histParseUrl
+        });
+        throw new Error(`Ranking or Parse API request failed (Ranking: ${rankingRes.status}, Parse: ${histParseRes.status})`);
+      }
       
       const rankingData = await rankingRes.json();
       const histParseData = await histParseRes.json();
@@ -422,11 +489,11 @@
     if (!characterName || !serverName) return;
 
     // キャラクター名の親要素を取得
-    const nameElement = document.querySelector('.frame__chara__name');
+    const nameElement = document.querySelector('.frame__chara__name, .entry__column__name');
     if (!nameElement) return;
 
-    // ボタンを表示
-    const nameBox = nameElement.closest('.frame__chara__box');
+    // ボタンを表示する親コンテナ
+    const nameBox = nameElement.closest('.frame__chara__box, .entry__column__box');
     if (nameBox) {
       // 挿入中マーカーを追加（同期的に実行して二重実行を防ぐ）
       const marker = document.createElement('div');
@@ -564,7 +631,8 @@
     if (host.includes('fflogs.com')) {
       insertFFLogsxivanalysisButton();
     } else if (host.includes('finalfantasyxiv.com')) {
-      if (document.querySelector('.frame__chara__name') && !document.querySelector('.fflogs-button-container')) {
+      const hasName = document.querySelector('.frame__chara__name, .entry__column__name');
+      if (hasName && !document.querySelector('.fflogs-button-container')) {
         insertButton();
       }
     }
