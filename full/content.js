@@ -70,8 +70,9 @@
     button.innerHTML = `${svgIcon}<span>FFLogs</span>`;
     button.title = `${characterName} (${serverName}) をFFLogsで検索`;
     
-    // FFLogsの検索URL
-    const searchUrl = `https://ja.fflogs.com/character/jp/${encodeURIComponent(serverName)}/${encodeURIComponent(characterName)}`;
+    // FFLogsの検索URL (リージョンを動的に判定)
+    const region = getRegionCode().toLowerCase();
+    const searchUrl = `https://ja.fflogs.com/character/${region}/${encodeURIComponent(serverName)}/${encodeURIComponent(characterName)}`;
     button.href = searchUrl;
     button.target = '_blank';
     button.rel = 'noopener noreferrer';
@@ -287,21 +288,26 @@
   function getRegionCode() {
     // データセンター名からリージョンを判定するのが最も確実
     const serverAndDc = getServerAndDcName();
+    let region = 'JP'; // デフォルト
+
     if (serverAndDc) {
       if (serverAndDc.includes('Elemental') || serverAndDc.includes('Gaia') || 
-          serverAndDc.includes('Mana') || serverAndDc.includes('Meteor')) return 'JP';
-      if (serverAndDc.includes('Aether') || serverAndDc.includes('Primal') || 
-          serverAndDc.includes('Crystal') || serverAndDc.includes('Dynamis')) return 'NA';
-      if (serverAndDc.includes('Chaos') || serverAndDc.includes('Light')) return 'EU';
-      if (serverAndDc.includes('Materia')) return 'OC';
+          serverAndDc.includes('Mana') || serverAndDc.includes('Meteor')) region = 'JP';
+      else if (serverAndDc.includes('Aether') || serverAndDc.includes('Primal') || 
+          serverAndDc.includes('Crystal') || serverAndDc.includes('Dynamis')) region = 'NA';
+      else if (serverAndDc.includes('Chaos') || serverAndDc.includes('Light')) region = 'EU';
+      else if (serverAndDc.includes('Materia')) region = 'OC';
+      else {
+        // DC名が見つからない、または未知の場合のみホスト名フォールバック
+        const host = window.location.hostname;
+        if (host.startsWith('na.')) region = 'NA';
+        else if (host.startsWith('eu.')) region = 'EU';
+        else if (host.startsWith('de.') || host.startsWith('fr.')) region = 'EU';
+      }
     }
 
-    // フォールバック: ホスト名から判定
-    const host = window.location.hostname;
-    if (host.startsWith('na.')) return 'NA';
-    if (host.startsWith('eu.')) return 'EU';
-    if (host.startsWith('de.') || host.startsWith('fr.')) return 'EU';
-    return 'JP'; // デフォルトはJP
+    console.log(`FFLogs Extension Debug: Character="${getCharacterName()}", Server="${getServerName()}", Region="${region}"`);
+    return region;
   }
 
   // FFLogsから最新のランキングデータを取得
