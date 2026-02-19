@@ -1,38 +1,103 @@
 # FFLogs & Achievements Lodestone Suite
 
-ロードストーンのキャラクターページを拡張するツールセットです。
-用途に合わせて、2種類の拡張機能から選択してインストールできます。
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
-## 概要
+**Final Fantasy XIV** のロードストーン・FFLogs を拡張する Chrome 拡張機能のツールセットです。  
+用途に合わせて **3 種類** のエディションから選択してインストールできます。
 
-このリポジトリには、以下の2つの拡張機能が含まれています。
+---
 
-### 1. [Full Version (full/)](./full)
+## エディション一覧
 
-- **名称**: FFLogs Lodestone Link
-- **特徴**:
-  - FFLogs, Tomestone.gg, Lalachievements へのリンクボタンを追加。
-  - FFLogs API 連携により、最新の戦闘成績（Best %）を表示可能。
-  - 詳細な表示制御（オン/オフ切替）が可能。
-- **おすすめの方**: パフォーマンスデータを詳しくチェックしたいパワーユーザー。
+| エディション           | 対象サイト | 主な機能                                              | バージョン |
+| ---------------------- | ---------- | ----------------------------------------------------- | ---------- |
+| [Full](./full)         | Lodestone  | FFLogs / Tomestone / Lalachievements 連携、Best% 表示 | v2.0.4     |
+| [Analysis](./analysis) | FFLogs     | xivanalysis へのワンクリック遷移                      | v1.0.0     |
+| [Mini](./mini)         | Lodestone  | Lalachievements ボタンのみ                            | v1.0.0     |
 
-### 2. [Mini Version (mini/)](./mini)
+---
 
-- **名称**: Lodestone Achievements Mini
-- **特徴**:
-  - アチーブメント確認ボタン（Lalachievements）の追加のみに特化。
-  - 設定や API キーは一切不要。
-  - 最も軽量・シンプル。
-- **おすすめの方**: アチーブメントだけをサクッと確認したいライトユーザー。
+### 1. Full Version — [FFLogs Lodestone Link](./full)
+
+> フル機能のパワーユーザー向けエディション
+
+- **マルチプラットフォーム連携**: FFLogs・Tomestone.gg・Lalachievements へのリンクボタンを追加
+- **Best % 表示**: FFLogs API 連携により、最新コンテンツの戦闘成績をロードストーン上に直接表示
+- **xivanalysis ボタン**: FFLogs レポート画面から xivanalysis へワンクリックで遷移
+- **表示カスタマイズ**: 各機能のオン/オフをオプション画面で個別に制御可能
+- **隠し設定**: 初期状態はシンプル構成、特定操作で高度な設定を開放
+
+### 2. Analysis Version — [xivanalysis for FFLogs](./analysis)
+
+> FFLogs に特化した軽量分析ツール
+
+- **xivanalysis ボタン**: FFLogs レポートページにワンクリックで xivanalysis を開くボタンを追加
+- **動的更新**: 戦闘の切り替えに応じてリンク先が自動で更新
+- **設定不要**: インストールするだけで動作、API キーや設定画面は不要
+
+### 3. Mini Version — [Lodestone Achievements Mini](./mini)
+
+> アチーブメントだけ確認したいライトユーザー向け
+
+- **Achievements ボタン**: キャラクター名の下に Lalachievements へのリンクを追加
+- **設定不要**: インストールするだけで即動作
+- **最軽量**: 必要最小限のリソースのみで動作
+
+---
 
 ## インストール方法
 
-1. このリポジトリをダウンロードまたはクローンします。
+### 手動インストール（デベロッパーモード）
+
+1. このリポジトリをクローンまたはダウンロードします。
+   ```bash
+   git clone https://github.com/ryota-kashi/fflogs-lodestone-extension.git
+   ```
 2. Chrome で `chrome://extensions/` を開きます。
-3. 右上の「デベロッパーモード」を ON にします。
-4. 「パッケージ化されていない拡張機能を読み込む」をクリックします。
-5. `./full` または `./mini` のいずれかのフォルダを選択します（両方入れることも可能ですが、ボタンが重複する場合があります）。
+3. 右上の **「デベロッパーモード」** を ON にします。
+4. **「パッケージ化されていない拡張機能を読み込む」** をクリックします。
+5. 使いたいエディションのフォルダ（`full/`、`analysis/`、`mini/`）を選択します。
+
+> [!NOTE]
+> 複数のエディションを同時にインストールできますが、Full版 と Analysis版 は FFLogs レポートページで xivanalysis ボタンが重複する場合があります。
+
+---
+
+## リポジトリ構成
+
+```
+fflogs-lodestone-extension/
+├── full/           # Full Version（FFLogs Lodestone Link）
+│   ├── manifest.json
+│   ├── content.js
+│   ├── options.html / options.js
+│   ├── styles.css
+│   └── icons/
+├── analysis/       # Analysis Version（xivanalysis for FFLogs）
+│   ├── manifest.json
+│   ├── content.js
+│   ├── styles.css
+│   └── icons/
+├── mini/           # Mini Version（Lodestone Achievements Mini）
+│   ├── manifest.json
+│   ├── content.js
+│   ├── styles.css
+│   └── icons/
+└── README.md       # このファイル
+```
+
+---
+
+## 技術仕様
+
+- **Manifest Version**: 3（Chrome Manifest V3）
+- **対応ブラウザ**: Google Chrome
+- **対応ドメイン**:
+  - Lodestone: `jp` / `na` / `eu` / `de` / `fr`
+  - FFLogs: `www.fflogs.com` / `ja.fflogs.com`
+
+---
 
 ## ライセンス
 
-MIT License
+[MIT License](./LICENSE)
