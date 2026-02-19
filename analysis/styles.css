@@ -1,0 +1,33 @@
+/* xivanalysis Button Styles */
+.xivanalysis-button {
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(135deg, #f0b429 0%, #d97706 100%);
+  color: #fff !important;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+}
+
+.xivanalysis-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(240, 180, 41, 0.3);
+  filter: brightness(1.1);
+}
+
+.xivanalysis-button:active {
+  transform: translateY(0);
+}
+
+.fflogs-button-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  fill: currentColor;
+}

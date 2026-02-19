@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>FFLogs Mock with xivanalysis Button</title>
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: #d0d0d0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            background-color: #2b2b2b;
+            padding: 15px 20px;
+            border-bottom: 1px solid #3a3a3a;
+            display: flex;
+            align-items: center;
+            border-radius: 4px;
+        }
+        .fight-select {
+            background-color: #1a1a1a;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-right: 15px;
+            font-size: 14px;
+            width: 250px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .fight-select::after {
+            content: '▼';
+            font-size: 10px;
+            color: #888;
+        }
+        
+        /* The Button Style from extension */
+        .xivanalysis-button {
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(135deg, #f0b429 0%, #d97706 100%);
+            color: #fff !important;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            font-family: "Segoe UI", sans-serif;
+        }
+        .fflogs-button-icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 6px;
+            fill: currentColor;
+        }
+    </style>
+</head>
+<body>
+    <div style="margin-bottom: 20px; font-weight: bold; font-size: 18px; color: #fff;">
+        Final Fantasy XIV Logs - Report Header Mockup
+    </div>
+    
+    <div class="header">
+        <div class="fight-select">
+            M4: Wicked Thunder (Savage)
+        </div>
+        
+        <!-- The Extension Button -->
+        <a class="xivanalysis-button">
+            <svg class="fflogs-button-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+            <span>xivanalysis</span>
+        </a>
+    </div>
+
+    <div style="margin-top: 30px; color: #777; font-size: 12px;">
+        * This is a generated mockup to demonstrate the button appearance.
+    </div>
+</body>
+</html>
