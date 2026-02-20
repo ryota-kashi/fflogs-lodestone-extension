@@ -624,7 +624,12 @@
   function initialize() {
     const host = window.location.hostname;
     if (host.includes('fflogs.com')) {
-      insertFFLogsxivanalysisButton();
+      // LogsトグルがONの場合のみxivanalysisボタンを表示
+      chrome.storage.sync.get({ showFFLogs: false }, (items) => {
+        if (items.showFFLogs) {
+          insertFFLogsxivanalysisButton();
+        }
+      });
     } else if (host.includes('finalfantasyxiv.com')) {
       insertButton();
     }
@@ -640,7 +645,12 @@
   const observer = new MutationObserver((mutations) => {
     const host = window.location.hostname;
     if (host.includes('fflogs.com')) {
-      insertFFLogsxivanalysisButton();
+      // LogsトグルがONの場合のみxivanalysisボタンを表示
+      chrome.storage.sync.get({ showFFLogs: false }, (items) => {
+        if (items.showFFLogs) {
+          insertFFLogsxivanalysisButton();
+        }
+      });
     } else if (host.includes('finalfantasyxiv.com')) {
       const hasName = document.querySelector('.frame__chara__name, .entry__column__name');
       if (hasName && !document.querySelector('.fflogs-button-container')) {
