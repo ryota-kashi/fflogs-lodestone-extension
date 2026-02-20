@@ -1,4 +1,4 @@
-# FFLogs Lodestone Link v2.0.4
+# FFLogs Lodestone Link v2.0.7
 
 Final Fantasy XIV のロードストーンキャラクターページを拡張し、FFLogs、Tomestone.gg、Lalachievements へのリンクや戦闘ログデータを直接表示する Chrome 拡張機能です。
 

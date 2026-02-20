@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "FFLogs Lodestone Link",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "description": "ロードストーンのキャラクターページにFFLogsへのリンクボタンを追加します",
   "permissions": ["storage"],
   "options_page": "options.html",

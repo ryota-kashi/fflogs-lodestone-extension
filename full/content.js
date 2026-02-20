@@ -153,6 +153,29 @@
     return button;
   }
 
+  // xivanalysis 個人用ボタンを作成
+  function createXivAnalysisPersonalButton(reportId, fightId, sourceId) {
+    const button = document.createElement('a');
+    button.className = 'xivanalysis-personal-button';
+    
+    // SVGアイコン (Person)
+    const svgIcon = `
+      <svg class="fflogs-button-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+      </svg>
+    `;
+
+    button.innerHTML = `${svgIcon}<span>個人</span>`;
+    button.title = `この個人のログをxivanalysisで分析`;
+    
+    const analysisUrl = `https://xivanalysis.com/fflogs/${reportId}/${fightId}/${sourceId}`;
+    button.href = analysisUrl;
+    button.target = '_blank';
+    button.rel = 'noopener noreferrer';
+    
+    return button;
+  }
+
   // FFLogsレポートページからレポートIDとファイトIDを取得
   function getFFLogsIds() {
     const pathParts = window.location.pathname.split('/');
@@ -205,8 +228,11 @@
       // ただし、xivanalysis は last を受け付けないので、可能な限り数値にしたい
       fightId = fightId || 'last';
     }
+
+    // sourceパラメータを取得（個人ログ表示時）
+    const sourceId = urlParams.get('source');
     
-    return { reportId, fightId };
+    return { reportId, fightId, sourceId };
   }
 
   // FFLogsのレポートメニューにボタンを挿入
@@ -220,12 +246,33 @@
     }
 
     const newUrl = `https://xivanalysis.com/fflogs/${ids.reportId}/${ids.fightId}`;
+    const newPersonalUrl = ids.sourceId ? `https://xivanalysis.com/fflogs/${ids.reportId}/${ids.fightId}/${ids.sourceId}` : null;
     const existingButton = document.querySelector('.xivanalysis-button');
+    const existingPersonalButton = document.querySelector('.xivanalysis-personal-button');
 
     if (existingButton) {
+      // パーティ全体ボタンのURL更新
       if (existingButton.href !== newUrl) {
         console.log('FFLogs Extension: Updating existing button URL to', newUrl);
         existingButton.href = newUrl;
+      }
+      // 個人用ボタンの更新
+      if (newPersonalUrl) {
+        if (existingPersonalButton) {
+          if (existingPersonalButton.href !== newPersonalUrl) {
+            existingPersonalButton.href = newPersonalUrl;
+          }
+        } else {
+          // 個人用ボタンが未作成なら追加
+          const wrapper = existingButton.closest('.xivanalysis-button-wrapper');
+          if (wrapper) {
+            const personalButton = createXivAnalysisPersonalButton(ids.reportId, ids.fightId, ids.sourceId);
+            wrapper.appendChild(personalButton);
+          }
+        }
+      } else if (existingPersonalButton) {
+        // sourceがなくなった場合は個人ボタンを削除
+        existingPersonalButton.remove();
       }
       return;
     }
@@ -283,6 +330,12 @@
     
     const button = createXivAnalysisButton(ids.reportId, ids.fightId);
     wrapper.appendChild(button);
+
+    // sourceパラメータがある場合は個人用ボタンも追加
+    if (ids.sourceId) {
+      const personalButton = createXivAnalysisPersonalButton(ids.reportId, ids.fightId, ids.sourceId);
+      wrapper.appendChild(personalButton);
+    }
     
     // 挿入
     foundTarget.insertAdjacentElement(injectionMethod, wrapper);
