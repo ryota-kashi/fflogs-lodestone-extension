@@ -165,8 +165,10 @@
     
     // fight=last の場合、または fight パラメータがない場合は、DOMから実際の数値を抽出を試みる
     if (!fightId || fightId === 'last') {
-      // 1. ページ内のリンクから数値を抽出 (Analyze タブやメニュー項目など)
-      // ?fight=last のときは「最後の戦闘」の数値 ID を探すのが最も確実
+      // 1. ページ内のリンクから数値を抽出
+      // 注意: FFLogsでは現在選択中のfightのリンクは全て fight=last のまま保持される
+      // そのため、数値fightIDは「他のfight」へのナビゲーションリンクにのみ存在する
+      // fight=last = 最後のfight なので、他fightの最大値 + 1 が正しいfight番号となる
       const links = Array.from(document.querySelectorAll('a[href*="fight="]'));
       const fightIdNumbers = links
         .map(link => {
@@ -176,8 +178,11 @@
         .filter(n => n !== null && !isNaN(n));
 
       if (fightIdNumbers.length > 0) {
-        // 全体の最大値を「最新の戦闘」として扱う
-        fightId = Math.max(...fightIdNumbers).toString();
+        // fight=last は最後の戦闘を指すため、他fightの最大値 + 1 が実際のfight番号
+        fightId = (Math.max(...fightIdNumbers) + 1).toString();
+      } else {
+        // 数値のfight IDが一つもない場合 = レポートに1つしかfightがない
+        fightId = '1';
       }
 
       // 2. まだ取れない場合は戦闘選択ドロップダウンをチェック
