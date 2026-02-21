@@ -237,11 +237,9 @@
 
   // FFLogsのレポートメニューにボタンを挿入
   function insertFFLogsxivanalysisButton() {
-    console.log('FFLogs Extension: Attempting to insert/update xivanalysis button');
     
     const ids = getFFLogsIds();
     if (!ids) {
-      console.log('FFLogs Extension: Could not get report/fight IDs');
       return;
     }
 
@@ -253,7 +251,6 @@
     if (existingButton) {
       // パーティ全体ボタンのURL更新
       if (existingButton.href !== newUrl) {
-        console.log('FFLogs Extension: Updating existing button URL to', newUrl);
         existingButton.href = newUrl;
       }
       // 個人用ボタンの更新
@@ -283,12 +280,10 @@
 
     // 候補1: 戦闘切り替えエリアのコンテナ
     foundTarget = document.querySelector('#filter-fight-and-phase');
-    if (foundTarget) {
-      console.log('FFLogs Extension: Found filter-fight-and-phase container');
-    } else {
+
       // 候補2: ボス選択部分の直後
+    if (!foundTarget) {
       foundTarget = document.querySelector('#filter-fight-boss-wrapper');
-      if (foundTarget) console.log('FFLogs Extension: Found filter-fight-boss-wrapper');
     }
 
     // 候補3: 設定ボタン (画面右上)
@@ -297,7 +292,6 @@
                     document.querySelector('.report-header-settings');
       if (foundTarget) {
         injectionMethod = 'beforebegin';
-        console.log('FFLogs Extension: Found Settings button');
       }
     }
 
@@ -309,12 +303,10 @@
       if (analyzeTab) {
         foundTarget = analyzeTab.closest('li') || analyzeTab;
         injectionMethod = 'beforebegin';
-        console.log('FFLogs Extension: Found Analyze tab');
       }
     }
 
     if (!foundTarget) {
-      console.log('FFLogs Extension: No suitable target element found after all fallbacks');
       return;
     }
 
@@ -339,7 +331,6 @@
     
     // 挿入
     foundTarget.insertAdjacentElement(injectionMethod, wrapper);
-    console.log('FFLogs Extension: xivanalysis button successfully injected', injectionMethod, foundTarget.tagName, foundTarget.id || foundTarget.className);
   }
 
   // リージョンコードを取得
@@ -364,7 +355,6 @@
       }
     }
 
-    console.log(`FFLogs Extension Debug: Character="${getCharacterName()}", Server="${getServerName()}", Region="${region}"`);
     return region;
   }
 
@@ -467,7 +457,8 @@
               encounterMap[encId] = {
                 name: entry.encounterName,
                 historical: entry.percentile,
-                id: encId
+                id: encId,
+                spec: entry.spec || ''
               };
             }
           }
@@ -487,7 +478,8 @@
           results.push({
             label: label,
             fullName: recorded ? recorded.name : def.name,
-            historical: recorded ? Math.floor(recorded.historical) : '-'
+            historical: recorded ? Math.floor(recorded.historical) : '-',
+            spec: recorded ? recorded.spec : ''
           });
         });
       } else {
@@ -512,7 +504,8 @@
           results.push({
             label: label,
             fullName: recorded ? recorded.name : `第${i + 1}ステージ`,
-            historical: recorded ? Math.floor(recorded.historical) : '-'
+            historical: recorded ? Math.floor(recorded.historical) : '-',
+            spec: recorded ? recorded.spec : ''
           });
         }
       }
@@ -642,21 +635,39 @@
             title.textContent = `LATEST: ${res.zoneName.toUpperCase()}`;
             grid.appendChild(title);
 
+            // FFLogs キャラクターページURL を生成
+            const region = getRegionCode().toLowerCase();
+            const fflogsCharUrl = `https://ja.fflogs.com/character/${region}/${encodeURIComponent(serverName)}/${encodeURIComponent(characterName)}`;
+
             res.encounters.forEach((enc, index) => {
-              const b = document.createElement('div');
+              const hasRecord = enc.historical !== '-';
+              const b = document.createElement(hasRecord ? 'a' : 'div');
               b.className = `fflogs-badge ${getRankClass(enc.historical)}`;
               b.style.animationDelay = `${index * 0.1}s`; // 順次表示
+              
+              if (hasRecord) {
+                b.href = fflogsCharUrl;
+                b.target = '_blank';
+                b.rel = 'noopener noreferrer';
+              }
               
               // 数字なら「層」を付ける
               const labelText = /^\d+$/.test(enc.label) ? `${enc.label}層` : enc.label;
               
-              // Historical のみを表示
+              // ジョブ略称の表示（specがある場合のみ）
+              const specHtml = enc.spec ? `<span class="fflogs-badge-spec">${enc.spec}</span>` : '';
+              
               b.innerHTML = `
                 <span class="fflogs-badge-label">${labelText}</span>
+                ${specHtml}
                 <span class="fflogs-value-main">${enc.historical}</span>
               `;
               
-              b.title = `${res.zoneName} - ${enc.fullName}\nBest: ${enc.historical}%`;
+              if (hasRecord) {
+                b.title = `${res.zoneName} - ${enc.fullName}${enc.spec ? ` (${enc.spec})` : ''}\nBest: ${enc.historical}%\nクリックでFFLogsを開く`;
+              } else {
+                b.title = `${res.zoneName} - ${enc.fullName}\n未クリア`;
+              }
               grid.appendChild(b);
             });
             scoresWrapper.appendChild(grid);
@@ -670,7 +681,6 @@
       });
     }
 
-    console.log('FFLogs Extension: Button insertion logic executed with visibility settings');
   }
 
   // ページ読み込み完了後に実行

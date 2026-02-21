@@ -11,8 +11,8 @@
 
 | エディション           | 対象サイト | 主な機能                                              | バージョン |
 | ---------------------- | ---------- | ----------------------------------------------------- | ---------- |
-| [Full](./full)         | Lodestone  | FFLogs / Tomestone / Lalachievements 連携、Best% 表示 | v2.0.7     |
-| [Analysis](./analysis) | FFLogs     | xivanalysis へのワンクリック遷移                      | v1.0.2     |
+| [Full](./full)         | Lodestone  | FFLogs / Tomestone / Lalachievements 連携、Best% 表示 | v2.0.8     |
+| [Analysis](./analysis) | FFLogs     | xivanalysis へのワンクリック遷移                      | v1.0.3     |
 | [Mini](./mini)         | Lodestone  | Lalachievements ボタンのみ                            | v1.0.0     |
 
 ---
