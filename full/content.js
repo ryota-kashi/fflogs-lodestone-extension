@@ -67,8 +67,8 @@
       </svg>
     `;
 
-    button.innerHTML = `${svgIcon}<span>FFLogs</span>`;
-    button.title = `${characterName} (${serverName}) をFFLogsで検索`;
+    button.innerHTML = `${svgIcon}<span>${chrome.i18n.getMessage('buttonFFLogs')}</span>`;
+    button.title = chrome.i18n.getMessage('tooltipFFLogs', [characterName, serverName]);
     
     // FFLogsの検索URL (リージョンを動的に判定)
     const region = getRegionCode().toLowerCase();
@@ -92,8 +92,8 @@
       </svg>
     `;
 
-    button.innerHTML = `${svgIcon}<span>Tomestone</span>`;
-    button.title = `${characterName} をTomestone.ggで検索`;
+    button.innerHTML = `${svgIcon}<span>${chrome.i18n.getMessage('buttonTomestone')}</span>`;
+    button.title = chrome.i18n.getMessage('tooltipTomestone', [characterName]);
     
     // Tomestone.ggの正確なURL形式 (https://tomestone.gg/character/{lodestoneId}/{slug})
     const slug = slugify(characterName);
@@ -117,8 +117,8 @@
       </svg>
     `;
 
-    button.innerHTML = `${svgIcon}<span>Achievements</span>`;
-    button.title = `Lalachievements でアチーブメントを確認`;
+    button.innerHTML = `${svgIcon}<span>${chrome.i18n.getMessage('buttonAchievements')}</span>`;
+    button.title = chrome.i18n.getMessage('tooltipAchievements');
     
     // LalachievementsのURL形式
     const searchUrl = `https://www.lalachievements.com/ja/char/${lodestoneId}/`;
@@ -141,8 +141,8 @@
       </svg>
     `;
 
-    button.innerHTML = `${svgIcon}<span>xivanalysis</span>`;
-    button.title = `このレポートをxivanalysisで分析`;
+    button.innerHTML = `${svgIcon}<span>${chrome.i18n.getMessage('buttonAnalyze')}</span>`;
+    button.title = chrome.i18n.getMessage('tooltipAnalyze');
     
     // xivanalysisのURL形式 (https://xivanalysis.com/fflogs/{reportId}/{fightId})
     const analysisUrl = `https://xivanalysis.com/fflogs/${reportId}/${fightId}`;
@@ -165,8 +165,8 @@
       </svg>
     `;
 
-    button.innerHTML = `${svgIcon}<span>個人</span>`;
-    button.title = `この個人のログをxivanalysisで分析`;
+    button.innerHTML = `${svgIcon}<span>${chrome.i18n.getMessage('buttonPersonal')}</span>`;
+    button.title = chrome.i18n.getMessage('tooltipPersonal');
     
     const analysisUrl = `https://xivanalysis.com/fflogs/${reportId}/${fightId}/${sourceId}`;
     button.href = analysisUrl;
@@ -188,10 +188,6 @@
     
     // fight=last の場合、または fight パラメータがない場合は、DOMから実際の数値を抽出を試みる
     if (!fightId || fightId === 'last') {
-      // 1. ページ内のリンクから数値を抽出
-      // 注意: FFLogsでは現在選択中のfightのリンクは全て fight=last のまま保持される
-      // そのため、数値fightIDは「他のfight」へのナビゲーションリンクにのみ存在する
-      // fight=last = 最後のfight なので、他fightの最大値 + 1 が正しいfight番号となる
       const links = Array.from(document.querySelectorAll('a[href*="fight="]'));
       const fightIdNumbers = links
         .map(link => {
@@ -201,14 +197,11 @@
         .filter(n => n !== null && !isNaN(n));
 
       if (fightIdNumbers.length > 0) {
-        // fight=last は最後の戦闘を指すため、他fightの最大値 + 1 が実際のfight番号
         fightId = (Math.max(...fightIdNumbers) + 1).toString();
       } else {
-        // 数値のfight IDが一つもない場合 = レポートに1つしかfightがない
         fightId = '1';
       }
 
-      // 2. まだ取れない場合は戦闘選択ドロップダウンをチェック
       if (!fightId || fightId === 'last') {
         const fightSelect = document.querySelector('#filter-fight-and-phase .Select-input input, #fight-select');
         if (fightSelect && fightSelect.value && !isNaN(fightSelect.value)) {
@@ -216,32 +209,23 @@
         } 
       }
 
-      // 3. 最後の戦闘（last）の数値IDを探す (ドロップダウンの最後の項目)
       if (!fightId || fightId === 'last') {
         const lastFightOption = document.querySelector('#fight-select option:last-child');
         if (lastFightOption && lastFightOption.value && !isNaN(lastFightOption.value)) {
           fightId = lastFightOption.value;
         }
       }
-
-      // 4. それでも取れない場合はフォールバック
-      // ただし、xivanalysis は last を受け付けないので、可能な限り数値にしたい
       fightId = fightId || 'last';
     }
 
-    // sourceパラメータを取得（個人ログ表示時）
     const sourceId = urlParams.get('source');
-    
     return { reportId, fightId, sourceId };
   }
 
-  // FFLogsのレポートメニューにボタンを挿入
-  function insertFFLogsxivanalysisButton() {
-    
+  // FFLogsのレポートメニューに分析ボタンを挿入
+  function insertXivanalysisButton() {
     const ids = getFFLogsIds();
-    if (!ids) {
-      return;
-    }
+    if (!ids) return;
 
     const newUrl = `https://xivanalysis.com/fflogs/${ids.reportId}/${ids.fightId}`;
     const newPersonalUrl = ids.sourceId ? `https://xivanalysis.com/fflogs/${ids.reportId}/${ids.fightId}/${ids.sourceId}` : null;
@@ -249,18 +233,15 @@
     const existingPersonalButton = document.querySelector('.xivanalysis-personal-button');
 
     if (existingButton) {
-      // パーティ全体ボタンのURL更新
       if (existingButton.href !== newUrl) {
         existingButton.href = newUrl;
       }
-      // 個人用ボタンの更新
       if (newPersonalUrl) {
         if (existingPersonalButton) {
           if (existingPersonalButton.href !== newPersonalUrl) {
             existingPersonalButton.href = newPersonalUrl;
           }
         } else {
-          // 個人用ボタンが未作成なら追加
           const wrapper = existingButton.closest('.xivanalysis-button-wrapper');
           if (wrapper) {
             const personalButton = createXivAnalysisPersonalButton(ids.reportId, ids.fightId, ids.sourceId);
@@ -268,47 +249,25 @@
           }
         }
       } else if (existingPersonalButton) {
-        // sourceがなくなった場合は個人ボタンを削除
         existingPersonalButton.remove();
       }
       return;
     }
 
-    // 挿入先を探す (最優先はユーザーが提示したエリア付近)
     let foundTarget = null;
-    let injectionMethod = 'afterend'; // 要素の直後に入れる
+    let injectionMethod = 'afterend';
 
-    // 候補1: 戦闘切り替えエリアのコンテナ
     foundTarget = document.querySelector('#filter-fight-and-phase');
-
-      // 候補2: ボス選択部分の直後
     if (!foundTarget) {
       foundTarget = document.querySelector('#filter-fight-boss-wrapper');
     }
-
-    // 候補3: 設定ボタン (画面右上)
     if (!foundTarget) {
       foundTarget = document.querySelector('#report-settings-dropdown') || 
                     document.querySelector('.report-header-settings');
-      if (foundTarget) {
-        injectionMethod = 'beforebegin';
-      }
+      if (foundTarget) injectionMethod = 'beforebegin';
     }
 
-    // 候補4: 分析 (Analyze) タブ
-    if (!foundTarget) {
-      const analyzeTab = Array.from(document.querySelectorAll('a, span')).find(el => 
-        el.textContent.includes('Analyze') || el.textContent.includes('分析')
-      );
-      if (analyzeTab) {
-        foundTarget = analyzeTab.closest('li') || analyzeTab;
-        injectionMethod = 'beforebegin';
-      }
-    }
-
-    if (!foundTarget) {
-      return;
-    }
+    if (!foundTarget) return;
 
     const wrapper = document.createElement('div');
     wrapper.className = 'xivanalysis-button-wrapper';
@@ -323,21 +282,18 @@
     const button = createXivAnalysisButton(ids.reportId, ids.fightId);
     wrapper.appendChild(button);
 
-    // sourceパラメータがある場合は個人用ボタンも追加
     if (ids.sourceId) {
       const personalButton = createXivAnalysisPersonalButton(ids.reportId, ids.fightId, ids.sourceId);
       wrapper.appendChild(personalButton);
     }
     
-    // 挿入
     foundTarget.insertAdjacentElement(injectionMethod, wrapper);
   }
 
   // リージョンコードを取得
   function getRegionCode() {
-    // データセンター名からリージョンを判定するのが最も確実
     const serverAndDc = getServerAndDcName();
-    let region = 'JP'; // デフォルト
+    let region = 'JP';
 
     if (serverAndDc) {
       if (serverAndDc.includes('Elemental') || serverAndDc.includes('Gaia') || 
@@ -347,7 +303,6 @@
       else if (serverAndDc.includes('Chaos') || serverAndDc.includes('Light')) region = 'EU';
       else if (serverAndDc.includes('Materia')) region = 'OC';
       else {
-        // DC名が見つからない、または未知の場合のみホスト名フォールバック
         const host = window.location.hostname;
         if (host.startsWith('na.')) region = 'NA';
         else if (host.startsWith('eu.')) region = 'EU';
@@ -367,7 +322,6 @@
       const histParseUrl = `https://www.fflogs.com/v1/parses/character/${encodeURIComponent(characterName)}/${encodeURIComponent(serverName)}/${region}?timeframe=historical&${commonQuery}`;
       const zonesUrl = `https://www.fflogs.com/v1/zones?api_key=${apiKey}`;
       
-      // 全てのデータを並列で取得。ただし zones の失敗で全体が止まらないよう個別ハンドリング
       const [rankingRes, histParseRes, zonesData] = await Promise.all([
         fetch(rankingUrl),
         fetch(histParseUrl),
@@ -375,13 +329,7 @@
       ]);
       
       if (!rankingRes.ok || !histParseRes.ok) {
-        console.error('FFLogs API Error Details:', {
-          rankingStatus: rankingRes.status,
-          rankingUrl: rankingUrl,
-          parseStatus: histParseRes.ok ? 200 : histParseRes.status,
-          parseUrl: histParseUrl
-        });
-        throw new Error(`Ranking or Parse API request failed (Ranking: ${rankingRes.status}, Parse: ${histParseRes.status})`);
+        throw new Error(`FFLogs API request failed`);
       }
       
       const rankingData = await rankingRes.json();
@@ -389,12 +337,10 @@
 
       if (!rankingData || !Array.isArray(rankingData)) return null;
 
-      // 1. 最新の「零式(Difficulty: 101)」レイドティアを探す
       let targetZoneId = -1;
       let targetZoneName = '';
       let hasSavage = false;
 
-      // RankingデータからZoneIdを探す
       rankingData.forEach(entry => {
         const isSavage = entry.difficulty === 101;
         if (isSavage) {
@@ -415,7 +361,6 @@
         });
       }
 
-      // Rankingデータから取得できなかった場合（未使用の最新コンテンツ等）、Parseデータから探す
       if (targetZoneId === -1 && Array.isArray(histParseData)) {
         histParseData.forEach(entry => {
           if (entry.zoneID > targetZoneId) {
@@ -427,10 +372,8 @@
 
       if (targetZoneId === -1) return null;
 
-      // 2. ゾーン内の全エンカウンター定義を取得
       let targetZone = null;
       if (Array.isArray(zonesData)) {
-        // v1/zones は拡張パッケージ(Expansions)の配列の中に zones が入っている場合があるため、再帰的に探す
         for (const item of zonesData) {
           if (item.id === targetZoneId && (item.encounters || item.zones)) {
             targetZone = item;
@@ -446,7 +389,6 @@
         }
       }
 
-      // 3. 特定したZoneの各ボスの数値を抽出
       const encounterMap = {};
       if (Array.isArray(histParseData)) {
         histParseData.forEach(entry => {
@@ -465,10 +407,8 @@
         });
       }
 
-      // 4. マッピング
       const results = [];
       if (targetZone && targetZone.encounters) {
-        // 完璧なマッピング（定義リストに基づく）
         const zoneEncounters = targetZone.encounters.sort((a, b) => a.id - b.id);
         zoneEncounters.forEach((def, index) => {
           const recorded = encounterMap[def.id];
@@ -483,11 +423,8 @@
           });
         });
       } else {
-        // フォールバック: IDの最小値からの差分で階層を推測
         const sortedEncounters = Object.values(encounterMap).sort((a, b) => a.id - b.id);
-        
-        // ログがあるものから最大階層を推測（通常は4層、前後編で5）
-        let maxIndex = 3; // デフォルト4層分
+        let maxIndex = 3;
         if (sortedEncounters.length > 0) {
           const minId = sortedEncounters[0].id;
           const lastId = sortedEncounters[sortedEncounters.length - 1].id;
@@ -513,7 +450,7 @@
       if (results.length === 0) return null;
       
       return {
-        zoneName: targetZoneName || (targetZone ? targetZone.name : '最新コンテンツ'),
+        zoneName: targetZoneName || (targetZone ? targetZone.name : 'Latest Contents'),
         encounters: results
       };
     } catch (error) {
@@ -533,39 +470,32 @@
     return 'rank-0';
   }
 
-  // ボタンを挿入
+  // Lodestoneボタンを挿入
   async function insertButton() {
-    // 既にボタンコンテナまたは挿入中マーカーが存在する場合はスキップ
     if (document.querySelector('.fflogs-button-container') || document.querySelector('.fflogs-inserting')) {
       return;
     }
 
     const characterName = getCharacterName();
     const serverName = getServerName();
-
     if (!characterName || !serverName) return;
 
-    // キャラクター名の親要素を取得
     const nameElement = document.querySelector('.frame__chara__name, .entry__column__name');
     if (!nameElement) return;
 
-    // ボタンを表示する親コンテナ
     const nameBox = nameElement.closest('.frame__chara__box, .entry__column__box');
     if (nameBox) {
-      // 挿入中マーカーを追加（同期的に実行して二重実行を防ぐ）
       const marker = document.createElement('div');
       marker.className = 'fflogs-inserting';
       marker.style.display = 'none';
       nameBox.appendChild(marker);
 
-      // 設定を取得してボタンを表示
       chrome.storage.sync.get({
         showFFLogs: false,
         showTomestone: false,
         showLalachievements: true,
         fflogsApiKey: ''
       }, async (result) => {
-        // コンテナがすでに作成されていないか再確認
         if (document.querySelector('.fflogs-button-container')) {
           marker.remove();
           return;
@@ -574,13 +504,10 @@
         const container = document.createElement('div');
         container.className = 'fflogs-button-container';
         
-        let hasButtons = false;
-
         // FFLogsボタン
         if (result.showFFLogs) {
           const mainButton = createFFLogsButton(characterName, serverName);
           container.appendChild(mainButton);
-          hasButtons = true;
         }
 
         // Tomestone / Lalachievementsボタン
@@ -589,53 +516,36 @@
           if (result.showTomestone) {
             const tomestoneButton = createTomestoneButton(characterName, lodestoneId);
             container.appendChild(tomestoneButton);
-            hasButtons = true;
           }
-          
           if (result.showLalachievements) {
             const lalachievementsButton = createLalachievementsButton(lodestoneId);
             container.appendChild(lalachievementsButton);
-            hasButtons = true;
           }
         }
 
-        // スコアエリアのプレースホルダー
         const scoresWrapper = document.createElement('div');
         scoresWrapper.className = 'fflogs-scores-wrapper';
         container.appendChild(scoresWrapper);
-        
-        // ボタンが一つもなくても、スコア（バッジ）は表示設定（FFLogs設定）に依存するため、
-        // コンテナ自体は追加する。ただし空のコンテナが浮かないように配慮。
         nameBox.appendChild(container);
 
-        // APIキーの取得とデータ反映
         if (result.showFFLogs && result.fflogsApiKey) {
-          // ローディング表示
           const loadingBadge = document.createElement('div');
           loadingBadge.className = 'fflogs-scores-grid fflogs-loading';
-          loadingBadge.textContent = 'FFLogsからデータを取得中...';
+          loadingBadge.textContent = chrome.i18n.getMessage('loadingBestPerformance');
           scoresWrapper.appendChild(loadingBadge);
 
           const res = await fetchBestPerformance(characterName, serverName, result.fflogsApiKey);
           
           if (res && res.encounters && res.encounters.length > 0) {
             loadingBadge.remove();
-
-            // スコアカウンターの作成
             const grid = document.createElement('div');
             grid.className = 'fflogs-scores-grid';
             
-            // 最新コンテンツ名の表示
             const title = document.createElement('div');
-            title.style.width = '100%';
-            title.style.fontSize = '10px';
-            title.style.color = 'rgba(0,0,0,0.5)';
-            title.style.marginBottom = '4px';
-            title.style.fontWeight = '700';
-            title.textContent = `LATEST: ${res.zoneName.toUpperCase()}`;
+            title.className = 'fflogs-latest-title';
+            title.textContent = chrome.i18n.getMessage('latestContentLabel', [res.zoneName.toUpperCase()]);
             grid.appendChild(title);
 
-            // FFLogs キャラクターページURL を生成
             const region = getRegionCode().toLowerCase();
             const fflogsCharUrl = `https://ja.fflogs.com/character/${region}/${encodeURIComponent(serverName)}/${encodeURIComponent(characterName)}`;
 
@@ -643,7 +553,7 @@
               const hasRecord = enc.historical !== '-';
               const b = document.createElement(hasRecord ? 'a' : 'div');
               b.className = `fflogs-badge ${getRankClass(enc.historical)}`;
-              b.style.animationDelay = `${index * 0.1}s`; // 順次表示
+              b.style.animationDelay = `${index * 0.1}s`;
               
               if (hasRecord) {
                 b.href = fflogsCharUrl;
@@ -651,10 +561,7 @@
                 b.rel = 'noopener noreferrer';
               }
               
-              // 数字なら「層」を付ける
               const labelText = /^\d+$/.test(enc.label) ? `${enc.label}層` : enc.label;
-              
-              // ジョブ略称の表示（specがある場合のみ）
               const specHtml = enc.spec ? `<span class="fflogs-badge-spec">${enc.spec}</span>` : '';
               
               b.innerHTML = `
@@ -664,9 +571,9 @@
               `;
               
               if (hasRecord) {
-                b.title = `${res.zoneName} - ${enc.fullName}${enc.spec ? ` (${enc.spec})` : ''}\nBest: ${enc.historical}%\nクリックでFFLogsを開く`;
+                b.title = chrome.i18n.getMessage('badgeTooltipCleared', [res.zoneName, enc.fullName, enc.spec ? ` (${enc.spec})` : '', enc.historical.toString()]);
               } else {
-                b.title = `${res.zoneName} - ${enc.fullName}\n未クリア`;
+                b.title = chrome.i18n.getMessage('badgeTooltipNotCleared', [res.zoneName, enc.fullName]);
               }
               grid.appendChild(b);
             });
@@ -675,22 +582,24 @@
             loadingBadge.remove();
           }
         }
-        
-        // 挿入完了後、マーカーを削除
         marker.remove();
       });
     }
-
   }
 
-  // ページ読み込み完了後に実行
+  // 初期化と監視
+  let timeout = null;
+  const debouncedInitialize = () => {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(initialize, 200);
+  };
+
   function initialize() {
     const host = window.location.hostname;
     if (host.includes('fflogs.com')) {
-      // LogsトグルがONの場合のみxivanalysisボタンを表示
       chrome.storage.sync.get({ showFFLogs: false }, (items) => {
         if (items.showFFLogs) {
-          insertFFLogsxivanalysisButton();
+          insertXivanalysisButton();
         }
       });
     } else if (host.includes('finalfantasyxiv.com')) {
@@ -704,21 +613,12 @@
     initialize();
   }
 
-  // 動的な変更を監視
   const observer = new MutationObserver((mutations) => {
-    const host = window.location.hostname;
-    if (host.includes('fflogs.com')) {
-      // LogsトグルがONの場合のみxivanalysisボタンを表示
-      chrome.storage.sync.get({ showFFLogs: false }, (items) => {
-        if (items.showFFLogs) {
-          insertFFLogsxivanalysisButton();
-        }
-      });
-    } else if (host.includes('finalfantasyxiv.com')) {
-      const hasName = document.querySelector('.frame__chara__name, .entry__column__name');
-      if (hasName && !document.querySelector('.fflogs-button-container')) {
-        insertButton();
-      }
+    const isOurChange = mutations.some(m => 
+      Array.from(m.addedNodes).some(n => n.classList && (n.classList.contains('fflogs-button-container') || n.classList.contains('xivanalysis-button-wrapper')))
+    );
+    if (!isOurChange) {
+      debouncedInitialize();
     }
   });
 

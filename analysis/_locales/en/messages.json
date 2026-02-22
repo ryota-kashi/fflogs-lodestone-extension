@@ -1,0 +1,20 @@
+{
+  "extensionName": {
+    "message": "xivanalysis for FFLogs"
+  },
+  "extensionDescription": {
+    "message": "Adds direct links to xivanalysis on FFLogs report pages."
+  },
+  "buttonAnalyze": {
+    "message": "xivanalysis"
+  },
+  "buttonPersonal": {
+    "message": "Personal"
+  },
+  "tooltipAnalyze": {
+    "message": "Analyze this report on xivanalysis"
+  },
+  "tooltipPersonal": {
+    "message": "Analyze this personal log on xivanalysis"
+  }
+}

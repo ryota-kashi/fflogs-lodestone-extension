@@ -1,0 +1,70 @@
+{
+  "extensionName": {
+    "message": "FFLogs Lodestone Link"
+  },
+  "extensionDescription": {
+    "message": "ロードストーンのキャラクターページにFFLogsへのリンクボタンを追加します。"
+  },
+  "buttonFFLogs": {
+    "message": "FFLogs"
+  },
+  "buttonTomestone": {
+    "message": "Tomestone"
+  },
+  "buttonAchievements": {
+    "message": "Achievements"
+  },
+  "buttonAnalyze": {
+    "message": "xivanalysis"
+  },
+  "buttonPersonal": {
+    "message": "個人"
+  },
+  "tooltipFFLogs": {
+    "message": "$NAME$ ($SERVER$) をFFLogsで検索",
+    "placeholders": {
+      "name": { "content": "$1" },
+      "server": { "content": "$2" }
+    }
+  },
+  "tooltipTomestone": {
+    "message": "$NAME$ をTomestone.ggで検索",
+    "placeholders": {
+      "name": { "content": "$1" }
+    }
+  },
+  "tooltipAchievements": {
+    "message": "Lalachievements でアチーブメントを確認"
+  },
+  "tooltipAnalyze": {
+    "message": "このレポートをxivanalysisで分析"
+  },
+  "tooltipPersonal": {
+    "message": "この個人のログをxivanalysisで分析"
+  },
+  "loadingBestPerformance": {
+    "message": "FFLogsからデータを取得中..."
+  },
+  "latestContentLabel": {
+    "message": "LATEST: $ZONE$",
+    "placeholders": {
+      "zone": { "content": "$1" }
+    }
+  },
+  "badgeTooltipCleared": {
+    "message": "$ZONE$ - $ENCOUNTER$$SPEC$\nBest: $BEST$%\nクリックでFFLogsを開く",
+    "placeholders": {
+      "zone": { "content": "$1" },
+      "encounter": { "content": "$2" },
+      "spec": { "content": "$3" },
+      "best": { "content": "$4" }
+    }
+  },
+  "badgeTooltipNotCleared": {
+    "message": "$ZONE$ - $ENCOUNTER$\n未クリア",
+    "placeholders": {
+      "zone": { "content": "$1" },
+      "encounter": { "content": "$2" }
+    }
+  }
+}

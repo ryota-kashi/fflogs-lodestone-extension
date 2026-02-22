@@ -1,0 +1,70 @@
+{
+  "extensionName": {
+    "message": "FFLogs Lodestone Link"
+  },
+  "extensionDescription": {
+    "message": "Adds FFLogs links to Lodestone character pages."
+  },
+  "buttonFFLogs": {
+    "message": "FFLogs"
+  },
+  "buttonTomestone": {
+    "message": "Tomestone"
+  },
+  "buttonAchievements": {
+    "message": "Achievements"
+  },
+  "buttonAnalyze": {
+    "message": "xivanalysis"
+  },
+  "buttonPersonal": {
+    "message": "Personal"
+  },
+  "tooltipFFLogs": {
+    "message": "Search $NAME$ ($SERVER$) on FFLogs",
+    "placeholders": {
+      "name": { "content": "$1" },
+      "server": { "content": "$2" }
+    }
+  },
+  "tooltipTomestone": {
+    "message": "Search $NAME$ on Tomestone.gg",
+    "placeholders": {
+      "name": { "content": "$1" }
+    }
+  },
+  "tooltipAchievements": {
+    "message": "Check achievements on Lalachievements"
+  },
+  "tooltipAnalyze": {
+    "message": "Analyze this report on xivanalysis"
+  },
+  "tooltipPersonal": {
+    "message": "Analyze this personal log on xivanalysis"
+  },
+  "loadingBestPerformance": {
+    "message": "Fetching data from FFLogs..."
+  },
+  "latestContentLabel": {
+    "message": "LATEST: $ZONE$",
+    "placeholders": {
+      "zone": { "content": "$1" }
+    }
+  },
+  "badgeTooltipCleared": {
+    "message": "$ZONE$ - $ENCOUNTER$$SPEC$\nBest: $BEST$%\nClick to open FFLogs",
+    "placeholders": {
+      "zone": { "content": "$1" },
+      "encounter": { "content": "$2" },
+      "spec": { "content": "$3" },
+      "best": { "content": "$4" }
+    }
+  },
+  "badgeTooltipNotCleared": {
+    "message": "$ZONE$ - $ENCOUNTER$\nNot Cleared",
+    "placeholders": {
+      "zone": { "content": "$1" },
+      "encounter": { "content": "$2" }
+    }
+  }
+}

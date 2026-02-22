@@ -13,8 +13,8 @@
       </svg>
     `;
 
-    button.innerHTML = `${svgIcon}<span>xivanalysis</span>`;
-    button.title = `このレポートをxivanalysisで分析`;
+    button.innerHTML = `${svgIcon}<span>${chrome.i18n.getMessage('buttonAnalyze')}</span>`;
+    button.title = chrome.i18n.getMessage('tooltipAnalyze');
     
     const analysisUrl = `https://xivanalysis.com/fflogs/${reportId}/${fightId}`;
     button.href = analysisUrl;
@@ -36,8 +36,8 @@
       </svg>
     `;
 
-    button.innerHTML = `${svgIcon}<span>個人</span>`;
-    button.title = `この個人のログをxivanalysisで分析`;
+    button.innerHTML = `${svgIcon}<span>${chrome.i18n.getMessage('buttonPersonal')}</span>`;
+    button.title = chrome.i18n.getMessage('tooltipPersonal');
     
     const analysisUrl = `https://xivanalysis.com/fflogs/${reportId}/${fightId}/${sourceId}`;
     button.href = analysisUrl;
@@ -176,15 +176,27 @@
   }
 
   // 実行
+  let timeout = null;
+  const debouncedInsert = () => {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(insertXivanalysisButton, 200);
+  };
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', insertXivanalysisButton);
   } else {
     insertXivanalysisButton();
   }
 
-  // 動的な変更を監視
-  const observer = new MutationObserver(() => {
-    insertXivanalysisButton();
+  // 動的な変更を監視 (特定のエレメントに絞るか、debounceする)
+  const observer = new MutationObserver((mutations) => {
+    // ボタン自体が追加・削除された時のループを防ぐ
+    const isOurChange = mutations.some(m => 
+      Array.from(m.addedNodes).some(n => n.classList && (n.classList.contains('xivanalysis-button-wrapper') || n.classList.contains('fflogs-styled-button')))
+    );
+    if (!isOurChange) {
+      debouncedInsert();
+    }
   });
 
   observer.observe(document.body, {
