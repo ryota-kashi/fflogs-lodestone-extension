@@ -66,5 +66,11 @@
       "zone": { "content": "$1" },
       "encounter": { "content": "$2" }
     }
+  },
+  "contextMenuSearchFFLogs": {
+    "message": "FF Logsで「$TERM$」を検索",
+    "placeholders": {
+      "term": { "content": "$1" }
+    }
   }
 }
