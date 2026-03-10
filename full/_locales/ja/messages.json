@@ -67,10 +67,16 @@
       "encounter": { "content": "$2" }
     }
   },
-  "contextMenuSearchFFLogs": {
-    "message": "FF Logsで「$TERM$」を検索",
+  "contextMenuFF14SearchParent": {
+    "message": "FF14 プレイヤー検索: 「$TERM$」",
     "placeholders": {
       "term": { "content": "$1" }
     }
+  },
+  "contextMenuSearchFFLogsSimple": {
+    "message": "FF Logsで検索"
+  },
+  "contextMenuSearchLodestone": {
+    "message": "ロードストーンで検索"
   }
 }

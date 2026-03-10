@@ -1,20 +1,40 @@
 // 右クリックメニューを作成
 chrome.runtime.onInstalled.addListener(() => {
+  // 親メニュー
+  chrome.contextMenus.create({
+    id: "ff14searchParent",
+    title: chrome.i18n.getMessage("contextMenuFF14SearchParent", ["%s"]),
+    contexts: ["selection"]
+  });
+
+  // 子メニュー1：FF Logs
   chrome.contextMenus.create({
     id: "searchFFLogs",
-    title: chrome.i18n.getMessage("contextMenuSearchFFLogs", ["%s"]),
-    contexts: ["selection"] // テキストを選択している時だけ表示
+    parentId: "ff14searchParent",
+    title: chrome.i18n.getMessage("contextMenuSearchFFLogsSimple"),
+    contexts: ["selection"]
+  });
+
+  // 子メニュー2：ロードストーン
+  chrome.contextMenus.create({
+    id: "searchLodestone",
+    parentId: "ff14searchParent",
+    title: chrome.i18n.getMessage("contextMenuSearchLodestone"),
+    contexts: ["selection"]
   });
 });
 
 // メニューがクリックされた時の処理
 chrome.contextMenus.onClicked.addListener((info, tab) => {
+  const query = encodeURIComponent(info.selectionText.trim());
+  
   if (info.menuItemId === "searchFFLogs") {
-    // 選択された文字列を取得し、URL用にエンコード
-    const query = encodeURIComponent(info.selectionText.trim());
     const url = `https://ja.fflogs.com/search/?term=${query}`;
-    
-    // 新しいタブで開く
+    chrome.tabs.create({ url: url });
+  } 
+  else if (info.menuItemId === "searchLodestone") {
+    // ロードストーンのキャラクター検索URL
+    const url = `https://jp.finalfantasyxiv.com/lodestone/character/?q=${query}&worldname=`;
     chrome.tabs.create({ url: url });
   }
 });

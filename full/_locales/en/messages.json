@@ -67,10 +67,16 @@
       "encounter": { "content": "$2" }
     }
   },
-  "contextMenuSearchFFLogs": {
-    "message": "Search FF Logs for \"$TERM$\"",
+  "contextMenuFF14SearchParent": {
+    "message": "FF14 Player Search: \"$TERM$\"",
     "placeholders": {
       "term": { "content": "$1" }
     }
+  },
+  "contextMenuSearchFFLogsSimple": {
+    "message": "Search FF Logs"
+  },
+  "contextMenuSearchLodestone": {
+    "message": "Search Lodestone"
   }
 }
