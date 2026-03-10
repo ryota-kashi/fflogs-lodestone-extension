@@ -1,18 +1,32 @@
 {
   "manifest_version": 3,
-  "name": "Lodestone Achievements Mini",
-  "version": "1.0.0",
-  "description": "ロードストーンのキャラクターページにアチーブメント確認ボタンを追加します",
-  "permissions": [],
+  "name": "__MSG_extensionName__",
+  "version": "2.0.0",
+  "description": "__MSG_extensionDescription__",
+  "default_locale": "ja",
+  "permissions": ["storage"],
+  "options_page": "options.html",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "__MSG_extensionName__"
+  },
   "host_permissions": [
     "https://*.finalfantasyxiv.com/lodestone/character/*",
-    "https://www.lalachievements.com/*"
+    "https://*.finalfantasyxiv.com/lodestone/blog/*",
+    "https://www.fflogs.com/*",
+    "https://ja.fflogs.com/*",
+    "https://www.lalachievements.com/*",
+    "https://tomestone.gg/*"
   ],
   "content_scripts": [
     {
-      "matches": ["https://*.finalfantasyxiv.com/lodestone/character/*"],
+      "matches": [
+        "https://*.finalfantasyxiv.com/lodestone/character/*",
+        "https://*.finalfantasyxiv.com/lodestone/blog/*"
+      ],
       "js": ["content.js"],
-      "css": ["styles.css"]
+      "css": ["styles.css"],
+      "run_at": "document_idle"
     }
   ],
   "icons": {

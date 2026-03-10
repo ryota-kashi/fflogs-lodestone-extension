@@ -3,6 +3,148 @@
 (function() {
   'use strict';
 
+  // 日記一覧用のミニLogsボタンを作成
+  function createFFLogsMiniButton(characterName, serverName) {
+    const button = document.createElement('a');
+    button.className = 'fflogs-mini-button';
+    
+    const svgIcon = `
+      <svg class="fflogs-button-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2Zm1,15H11V11h2Zm0-8H11V7h2ZM16 11V17H14V11H16ZM10 13V17H8V13H10Z"/>
+      </svg>
+    `;
+
+    button.innerHTML = svgIcon;
+    button.title = chrome.i18n.getMessage('tooltipFFLogsList', [characterName, serverName]);
+    
+    const region = getRegionCodeForServer(serverName).toLowerCase();
+    const searchUrl = `https://ja.fflogs.com/character/${region}/${encodeURIComponent(serverName)}/${encodeURIComponent(characterName)}`;
+    button.href = searchUrl;
+    button.target = '_blank';
+    button.rel = 'noopener noreferrer';
+    
+    // クリック時に一括オープンのイベントを阻害しないように
+    button.addEventListener('click', (e) => e.stopPropagation());
+    
+    return button;
+  }
+
+  let selectedLogsUrls = new Set();
+  let floatingPanel = null;
+
+  // フローティング操作パネルの作成または更新
+  function updateFloatingPanel() {
+    if (!floatingPanel) {
+      floatingPanel = document.createElement('div');
+      floatingPanel.className = 'fflogs-floating-panel';
+      
+      const button = document.createElement('button');
+      button.className = 'fflogs-open-selected-button';
+      button.id = 'fflogs-open-selected';
+      
+      const svgIcon = `
+        <svg class="fflogs-button-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+        </svg>
+      `;
+      button.innerHTML = `${svgIcon}<span id="fflogs-selected-count"></span>`;
+      button.title = chrome.i18n.getMessage('tooltipOpenSelectedLogs');
+      
+      const clearButton = document.createElement('button');
+      clearButton.className = 'fflogs-clear-selected-button';
+      clearButton.textContent = chrome.i18n.getMessage('buttonClearSelected') || 'すべて解除';
+      clearButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        selectedLogsUrls.clear();
+        document.querySelectorAll('.fflogs-checkbox').forEach(cb => cb.checked = false);
+        updateFloatingPanel();
+      });
+
+      const buttonGroup = document.createElement('div');
+      buttonGroup.className = 'fflogs-panel-button-group';
+      clearButton.style.flex = '1';
+      button.style.flex = '2';
+      buttonGroup.appendChild(clearButton);
+      buttonGroup.appendChild(button);
+
+      const text = document.createElement('p');
+      text.className = 'fflogs-panel-text';
+      text.textContent = '選択したLogsを別タブで開きます';
+      
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        const urls = Array.from(selectedLogsUrls);
+        urls.forEach((url, index) => {
+          setTimeout(() => {
+            window.open(url, '_blank', 'noopener,noreferrer');
+          }, index * 300);
+        });
+        // 任意: 開いた後に選択を解除する場合はここに処理を追加
+      });
+      
+      floatingPanel.appendChild(buttonGroup);
+      floatingPanel.appendChild(text);
+      document.body.appendChild(floatingPanel);
+    }
+    
+    // カウントの更新と表示切り替え
+    const count = selectedLogsUrls.size;
+    const countSpan = floatingPanel.querySelector('#fflogs-selected-count');
+    if (countSpan) {
+      countSpan.textContent = chrome.i18n.getMessage('buttonOpenSelectedLogs', [count.toString()]);
+    }
+    
+    if (count > 0) {
+      floatingPanel.classList.add('is-active');
+    } else {
+      floatingPanel.classList.remove('is-active');
+    }
+  }
+
+  // 日記一覧用のチェックボックスを作成
+  function createFFLogsCheckbox(url) {
+    const wrapper = document.createElement('label');
+    wrapper.className = 'fflogs-checkbox-wrapper';
+    wrapper.title = '一括で開く対象として選択';
+    
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'fflogs-checkbox';
+    checkbox.value = url;
+    
+    // 状態が変更されたらSetを更新しパネルに反映
+    checkbox.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        selectedLogsUrls.add(url);
+      } else {
+        selectedLogsUrls.delete(url);
+      }
+      updateFloatingPanel();
+    });
+    
+    // すでに選択されているURLならチェックを入れる（SPA遷移対策）
+    if (selectedLogsUrls.has(url)) {
+      checkbox.checked = true;
+    }
+    
+    wrapper.appendChild(checkbox);
+    return wrapper;
+  }
+
+  // サーバー名からリージョンコードを取得 (汎用版)
+  function getRegionCodeForServer(serverAndDc) {
+    let region = 'JP';
+    if (serverAndDc) {
+      if (serverAndDc.includes('Elemental') || serverAndDc.includes('Gaia') || 
+          serverAndDc.includes('Mana') || serverAndDc.includes('Meteor')) region = 'JP';
+      else if (serverAndDc.includes('Aether') || serverAndDc.includes('Primal') || 
+          serverAndDc.includes('Crystal') || serverAndDc.includes('Dynamis')) region = 'NA';
+      else if (serverAndDc.includes('Chaos') || serverAndDc.includes('Light')) region = 'EU';
+      else if (serverAndDc.includes('Materia')) region = 'OC';
+    }
+    return region;
+  }
+
   // キャラクター名を取得
   function getCharacterName() {
     // プロフィールページ用セレクタ
@@ -96,7 +238,7 @@
     button.title = chrome.i18n.getMessage('tooltipTomestone', [characterName]);
     
     // Tomestone.ggの正確なURL形式 (https://tomestone.gg/character/{lodestoneId}/{slug})
-    const slug = slugify(characterName);
+    const slug = slugify(characterName) || 'player';
     const searchUrl = `https://tomestone.gg/character/${lodestoneId}/${slug}`;
     button.href = searchUrl;
     button.target = '_blank';
@@ -290,27 +432,59 @@
     foundTarget.insertAdjacentElement(injectionMethod, wrapper);
   }
 
-  // リージョンコードを取得
+  // 日記一覧ページにボタンを挿入
+  function insertBlogListButtons() {
+    if (!chrome.runtime?.id) return;
+    chrome.storage.sync.get({ showFFLogs: false }, (result) => {
+      if (!result.showFFLogs) return; // オプションがOFFなら何もしない
+
+      // ブロック表示とリスト表示の両方に対応
+      const entries = document.querySelectorAll('.entry__blog_block__search, .entry__blog_search');
+      const logsUrls = [];
+
+      entries.forEach(entry => {
+        if (entry.querySelector('.fflogs-mini-button')) return;
+
+        let nameElement, serverElement, targetContainer;
+
+        if (entry.classList.contains('entry__blog_block__search')) {
+          // ブロック表示
+          nameElement = entry.querySelector('.entry__blog_block__search__chara__name');
+          serverElement = entry.querySelector('.entry__blog_block__search__chara__world');
+          targetContainer = entry.querySelector('.entry__blog_block__search__chara__box');
+        } else {
+          // リスト表示
+          nameElement = entry.querySelector('.entry__blog_search__chara__name');
+          serverElement = entry.querySelector('.entry__blog_search__chara__world');
+          targetContainer = entry.querySelector('.entry__blog_search__chara');
+        }
+
+        if (nameElement && serverElement && targetContainer) {
+          const name = nameElement.textContent.trim();
+          const serverText = serverElement.textContent.trim();
+          const serverMatch = serverText.match(/^([^\s\[\(]+)/);
+          const server = serverMatch ? serverMatch[1] : serverText;
+          
+          const button = createFFLogsMiniButton(name, server);
+          const checkbox = createFFLogsCheckbox(button.href);
+          
+          const wrapper = document.createElement('div');
+          wrapper.className = 'fflogs-list-actions';
+          wrapper.appendChild(button);
+          wrapper.appendChild(checkbox);
+          
+          targetContainer.appendChild(wrapper);
+        }
+      });
+
+      // 既存のチェックボックス状態を考慮してパネルを初期化
+      updateFloatingPanel();
+    });
+  }
+
+  // リージョンコードを取得 (キャラクターページ用)
   function getRegionCode() {
-    const serverAndDc = getServerAndDcName();
-    let region = 'JP';
-
-    if (serverAndDc) {
-      if (serverAndDc.includes('Elemental') || serverAndDc.includes('Gaia') || 
-          serverAndDc.includes('Mana') || serverAndDc.includes('Meteor')) region = 'JP';
-      else if (serverAndDc.includes('Aether') || serverAndDc.includes('Primal') || 
-          serverAndDc.includes('Crystal') || serverAndDc.includes('Dynamis')) region = 'NA';
-      else if (serverAndDc.includes('Chaos') || serverAndDc.includes('Light')) region = 'EU';
-      else if (serverAndDc.includes('Materia')) region = 'OC';
-      else {
-        const host = window.location.hostname;
-        if (host.startsWith('na.')) region = 'NA';
-        else if (host.startsWith('eu.')) region = 'EU';
-        else if (host.startsWith('de.') || host.startsWith('fr.')) region = 'EU';
-      }
-    }
-
-    return region;
+    return getRegionCodeForServer(getServerAndDcName());
   }
 
   // FFLogsから最新のランキングデータを取得
@@ -603,7 +777,11 @@
         }
       });
     } else if (host.includes('finalfantasyxiv.com')) {
-      insertButton();
+      if (window.location.pathname.includes('/blog/')) {
+        insertBlogListButtons();
+      } else {
+        insertButton();
+      }
     }
   }
 

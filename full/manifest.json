@@ -8,6 +8,10 @@
   "background": {
     "service_worker": "background.js"
   },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "__MSG_extensionName__"
+  },
   "options_page": "options.html",
   "host_permissions": [
     "https://jp.finalfantasyxiv.com/*",
@@ -27,6 +31,11 @@
         "https://eu.finalfantasyxiv.com/lodestone/character/*",
         "https://de.finalfantasyxiv.com/lodestone/character/*",
         "https://fr.finalfantasyxiv.com/lodestone/character/*",
+        "https://jp.finalfantasyxiv.com/lodestone/blog/*",
+        "https://na.finalfantasyxiv.com/lodestone/blog/*",
+        "https://eu.finalfantasyxiv.com/lodestone/blog/*",
+        "https://de.finalfantasyxiv.com/lodestone/blog/*",
+        "https://fr.finalfantasyxiv.com/lodestone/blog/*",
         "https://www.fflogs.com/reports/*",
         "https://ja.fflogs.com/reports/*"
       ],

@@ -1,0 +1,54 @@
+{
+  "extensionName": {
+    "message": "FFLogs Connect Linker"
+  },
+  "extensionDescription": {
+    "message": "A lightweight extension to check achievements on Lodestone and quickly link character profiles to FFLogs from blog lists."
+  },
+  "buttonFFLogs": {
+    "message": "FFLogs"
+  },
+  "buttonTomestone": {
+    "message": "Tomestone"
+  },
+  "buttonAchievements": {
+    "message": "Achievements"
+  },
+  "tooltipFFLogs": {
+    "message": "Search $NAME$ ($SERVER$) on FFLogs",
+    "placeholders": {
+      "name": { "content": "$1" },
+      "server": { "content": "$2" }
+    }
+  },
+  "tooltipTomestone": {
+    "message": "Search $NAME$ on Tomestone.gg",
+    "placeholders": {
+      "name": { "content": "$1" }
+    }
+  },
+  "tooltipAchievements": {
+    "message": "Check achievements on Lalachievements"
+  },
+  "popupTitle": {
+    "message": "FFLogs Batch Search"
+  },
+  "popupLabelInput": {
+    "message": "Paste Text Here"
+  },
+  "popupButtonExtract": {
+    "message": "Extract Character Names"
+  },
+  "popupLabelResults": {
+    "message": "Results"
+  },
+  "popupButtonSelectAll": {
+    "message": "Select All"
+  },
+  "popupButtonDeselectAll": {
+    "message": "Deselect All"
+  },
+  "popupButtonSearch": {
+    "message": "Search Selected Characters"
+  }
+}

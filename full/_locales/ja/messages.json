@@ -3,7 +3,7 @@
     "message": "FFLogs Lodestone Link"
   },
   "extensionDescription": {
-    "message": "ロードストーンのキャラクターページにFFLogsへのリンクボタンを追加します。"
+    "message": "ロードストーンのキャラクターページからの実績確認に加え、日記から興味のある募集主の実績をFFLogsへ素早くリンクさせるツールです。"
   },
   "buttonFFLogs": {
     "message": "FFLogs"
@@ -29,8 +29,46 @@
   },
   "tooltipTomestone": {
     "message": "$NAME$ をTomestone.ggで検索",
+    "description": "キャラクタープロフィールをTomestone.ggで検索します。",
     "placeholders": {
       "name": { "content": "$1" }
+    }
+  },
+  "buttonOpenSelectedLogs": {
+    "message": "選択したLogsを開く ($COUNT$件)",
+    "placeholders": {
+      "count": { "content": "$1" }
+    }
+  },
+  "tooltipOpenSelectedLogs": {
+    "message": "チェックを入れたプレイヤーのLogsを別タブで開きます"
+  },
+  "popupTitle": {
+    "message": "FFLogs Batch Search"
+  },
+  "popupLabelInput": {
+    "message": "テキストを貼り付け"
+  },
+  "popupButtonExtract": {
+    "message": "キャラクター名を抽出"
+  },
+  "popupLabelResults": {
+    "message": "抽出結果"
+  },
+  "popupButtonSelectAll": {
+    "message": "すべて選択"
+  },
+  "popupButtonDeselectAll": {
+    "message": "すべて解除"
+  },
+  "popupButtonSearch": {
+    "message": "選択したキャラクターを検索"
+  },
+  "tooltipFFLogsList": {
+    "message": "$NAME$ ($SERVER$) をFFLogsで検索",
+    "placeholders": {
+      "name": { "content": "$1" },
+      "server": { "content": "$2" }
     }
   },
   "tooltipAchievements": {

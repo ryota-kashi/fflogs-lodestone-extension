@@ -1,67 +1,284 @@
+/* Full版ベースのプレミアムスタイル (API連携なし版) */
+
 :root {
-  --lala-button-bg: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  --lala-hover-bg: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  --fflogs-gradient: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%);
+  --fflogs-glow: rgba(124, 58, 237, 0.4);
+  --fflogs-text: #ffffff;
+
+  --tomestone-gradient: linear-gradient(135deg, #0d9488 0%, #0891b2 100%);
+  --tomestone-glow: rgba(13, 148, 136, 0.4);
+
+  --lalachievements-gradient: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  --lalachievements-glow: rgba(217, 119, 6, 0.4);
 }
 
-.lalachievements-button-container {
+.fflogs-button-container {
+  margin-top: 16px;
   display: flex;
-  gap: 10px;
-  margin-top: 12px;
   flex-wrap: wrap;
+  gap: 12px;
+  perspective: 1000px;
 }
 
-.lalachievements-button {
+/* ボタン共通のベーススタイル */
+.fflogs-button, .tomestone-button, .lalachievements-button {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: var(--lala-button-bg);
-  color: white !important;
+  gap: 10px;
+  padding: 10px 14px;
+  color: var(--fflogs-text) !important;
   text-decoration: none !important;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 800;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 15px rgba(217, 119, 6, 0.3);
-  position: relative;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.025em;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-.lalachievements-button:hover {
-  background: var(--lala-hover-bg);
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 6px 20px rgba(217, 119, 6, 0.4);
-}
+/* 各ボタンの背景色 */
+.fflogs-button { background: var(--fflogs-gradient); }
+.tomestone-button { background: var(--tomestone-gradient); }
+.lalachievements-button { background: var(--lalachievements-gradient); }
 
-.lalachievements-button::after {
+/* シマー効果 */
+.fflogs-button::after, .tomestone-button::after, .lalachievements-button::after {
   content: "";
   position: absolute;
   top: -50%;
-  left: -50%;
-  width: 200%;
+  left: -60%;
+  width: 20%;
   height: 200%;
-  background: linear-gradient(
-    to bottom right,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0) 40%,
-    rgba(255, 255, 255, 0.4) 50%,
-    rgba(255, 255, 255, 0) 60%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  transform: rotate(45deg);
-  transition: all 0.3s;
-  animation: shimmer 3s infinite;
+  background: rgba(255, 255, 255, 0.2);
+  transform: rotate(30deg);
+  animation: fflogs-shimmer 4s infinite;
+}
+.tomestone-button::after { animation-delay: 1s; }
+.lalachievements-button::after { animation-delay: 2s; }
+
+@keyframes fflogs-shimmer {
+  0% { left: -60%; }
+  15% { left: 120%; }
+  100% { left: 120%; }
 }
 
-@keyframes shimmer {
-  0% { transform: translateX(-150%) rotate(45deg); }
-  100% { transform: translateX(150%) rotate(45deg); }
+/* ホバー/アクティブ時 */
+.fflogs-button:hover, .tomestone-button:hover, .lalachievements-button:hover {
+  transform: translateY(-4px) scale(1.02);
+  filter: brightness(1.1);
+}
+.fflogs-button:hover { box-shadow: 0 12px 24px var(--fflogs-glow); }
+.tomestone-button:hover { box-shadow: 0 12px 24px var(--tomestone-glow); }
+.lalachievements-button:hover { box-shadow: 0 12px 24px var(--lalachievements-glow); }
+
+.fflogs-button:active, .tomestone-button:active, .lalachievements-button:active {
+  transform: translateY(-1px) scale(0.98);
+  transition: all 0.1s ease;
 }
 
+/* アイコン */
 .fflogs-button-icon {
   width: 18px;
   height: 18px;
   fill: currentColor;
+  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.fflogs-button:hover .fflogs-button-icon,
+.tomestone-button:hover .fflogs-button-icon,
+.lalachievements-button:hover .fflogs-button-icon {
+  transform: scale(1.2) rotate(5deg);
+}
+
+@media (max-width: 768px) {
+  .fflogs-button, .tomestone-button, .lalachievements-button {
+    padding: 8px 18px;
+    font-size: 13px;
+}
+}
+
+/* 日記一覧用のミニLogsボタン */
+.fflogs-mini-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-left: 8px;
+  background: var(--fflogs-gradient);
+  border-radius: 6px;
+  color: #fff !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  vertical-align: middle;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+}
+
+.fflogs-mini-button:hover {
+  transform: translateY(-2px) scale(1.1);
+  box-shadow: 0 4px 10px var(--fflogs-glow);
+  filter: brightness(1.2);
+}
+
+.fflogs-mini-button .fflogs-button-icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* 日記一覧用のチェックボックス */
+.fflogs-checkbox-wrapper {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.fflogs-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.fflogs-checkbox:hover {
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.fflogs-checkbox:checked {
+  background: var(--fflogs-gradient);
+  border-color: transparent;
+  box-shadow: 0 0 8px var(--fflogs-glow);
+}
+
+.fflogs-checkbox:checked::after {
+  content: "✓";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* フローティング操作パネル */
+.fflogs-floating-panel {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 9999;
+  background: rgba(20, 20, 25, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 15px var(--fflogs-glow);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  transform: translateY(150%);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.fflogs-floating-panel.is-active {
+  transform: translateY(0);
+}
+
+.fflogs-open-selected-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--fflogs-gradient);
+  color: #fff !important;
+  text-decoration: none !important;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+}
+
+.fflogs-open-selected-button:hover {
+  filter: brightness(1.2);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--fflogs-glow);
+}
+
+.fflogs-open-selected-button:active {
+  transform: translateY(0);
+}
+
+.fflogs-panel-text {
+  color: #ccc;
+  font-size: 12px;
+  margin: 0;
+}
+
+/* 日記一覧用 調整 */
+.fflogs-list-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 16px;
+  vertical-align: middle;
+}
+
+/* 以前のmarginを上書き打ち消し */
+.fflogs-list-actions .fflogs-mini-button,
+.fflogs-list-actions .fflogs-checkbox-wrapper {
+  margin-left: 0 !important;
+}
+
+/* パネルのボタングループ用 */
+.fflogs-panel-button-group {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.fflogs-clear-selected-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff !important;
+  text-decoration: none !important;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.fflogs-clear-selected-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+@media (max-width: 768px) {
+  .fflogs-clear-selected-button {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
 }
