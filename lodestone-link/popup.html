@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>FFLogs Batch Search</title>
+  <link rel="stylesheet" href="popup.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="popup-container">
+    <header class="popup-header">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" class="logo-icon">
+          <path d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2Zm1,15H11V11h2Zm0-8H11V7h2ZM16 11V17H14V11H16ZM10 13V17H8V13H10Z"/>
+        </svg>
+        <h1 data-i18n="popupTitle">FFLogs Batch Search</h1>
+      </div>
+    </header>
+
+    <main class="popup-content">
+      <div class="input-section">
+        <label for="pastedText" class="section-label" data-i18n="popupLabelInput">テキストを貼り付け</label>
+        <textarea id="pastedText" placeholder="PT募集文などをここにコピペしてください..." rows="6"></textarea>
+        <button id="extractBtn" class="primary-button" data-i18n="popupButtonExtract">キャラクター名を抽出</button>
+      </div>
+
+      <div class="results-section hidden" id="resultsSection">
+        <div class="results-header">
+          <label class="section-label"><span data-i18n="popupLabelResults">抽出結果</span> (<span id="foundCount">0</span>)</label>
+          <button id="selectAllBtn" class="text-button" data-i18n="popupButtonSelectAll">すべて選択</button>
+        </div>
+        <div id="characterList" class="character-list">
+          <!-- 抽出されたキャラクター名がここに挿入されます -->
+        </div>
+        <button id="searchBtn" class="action-button hidden" data-i18n="popupButtonSearch">選択したキャラクターを検索</button>
+      </div>
+    </main>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,642 @@
+// ロードストーンのキャラクターページにFFLogsボタンを追加
+
+(function() {
+  'use strict';
+
+  // 日記一覧用のミニLogsボタンを作成
+  function createFFLogsMiniButton(characterName, serverName) {
+    const button = document.createElement('a');
+    button.className = 'fflogs-mini-button';
+    
+    const svgIcon = `
+      <svg class="fflogs-button-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2Zm1,15H11V11h2Zm0-8H11V7h2ZM16 11V17H14V11H16ZM10 13V17H8V13H10Z"/>
+      </svg>
+    `;
+
+    button.innerHTML = svgIcon;
+    button.title = chrome.i18n.getMessage('tooltipFFLogsList', [characterName, serverName]);
+    
+    const region = getRegionCodeForServer(serverName).toLowerCase();
+    const searchUrl = `https://ja.fflogs.com/character/${region}/${encodeURIComponent(serverName)}/${encodeURIComponent(characterName)}`;
+    button.href = searchUrl;
+    button.target = '_blank';
+    button.rel = 'noopener noreferrer';
+    
+    // クリック時に一括オープンのイベントを阻害しないように
+    button.addEventListener('click', (e) => e.stopPropagation());
+    
+    return button;
+  }
+
+  let selectedLogsUrls = new Set();
+  let floatingPanel = null;
+
+  // フローティング操作パネルの作成または更新
+  function updateFloatingPanel() {
+    if (!floatingPanel) {
+      floatingPanel = document.createElement('div');
+      floatingPanel.className = 'fflogs-floating-panel';
+      
+      const button = document.createElement('button');
+      button.className = 'fflogs-open-selected-button';
+      button.id = 'fflogs-open-selected';
+      
+      const svgIcon = `
+        <svg class="fflogs-button-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+        </svg>
+      `;
+      button.innerHTML = `${svgIcon}<span id="fflogs-selected-count"></span>`;
+      button.title = chrome.i18n.getMessage('tooltipOpenSelectedLogs');
+      
+      const clearButton = document.createElement('button');
+      clearButton.className = 'fflogs-clear-selected-button';
+      clearButton.textContent = chrome.i18n.getMessage('buttonClearSelected') || 'すべて解除';
+      clearButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        selectedLogsUrls.clear();
+        document.querySelectorAll('.fflogs-checkbox').forEach(cb => cb.checked = false);
+        updateFloatingPanel();
+      });
+
+      const buttonGroup = document.createElement('div');
+      buttonGroup.className = 'fflogs-panel-button-group';
+      clearButton.style.flex = '1';
+      button.style.flex = '2';
+      buttonGroup.appendChild(clearButton);
+      buttonGroup.appendChild(button);
+
+      const text = document.createElement('p');
+      text.className = 'fflogs-panel-text';
+      text.textContent = '選択したLogsを別タブで開きます';
+      
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        const urls = Array.from(selectedLogsUrls);
+        urls.forEach((url, index) => {
+          setTimeout(() => {
+            window.open(url, '_blank', 'noopener,noreferrer');
+          }, index * 300);
+        });
+        // 任意: 開いた後に選択を解除する場合はここに処理を追加
+      });
+      
+      floatingPanel.appendChild(buttonGroup);
+      floatingPanel.appendChild(text);
+      document.body.appendChild(floatingPanel);
+    }
+    
+    // カウントの更新と表示切り替え
+    const count = selectedLogsUrls.size;
+    const countSpan = floatingPanel.querySelector('#fflogs-selected-count');
+    if (countSpan) {
+      countSpan.textContent = chrome.i18n.getMessage('buttonOpenSelectedLogs', [count.toString()]);
+    }
+    
+    if (count > 0) {
+      floatingPanel.classList.add('is-active');
+    } else {
+      floatingPanel.classList.remove('is-active');
+    }
+  }
+
+  // 日記一覧用のチェックボックスを作成
+  function createFFLogsCheckbox(url) {
+    const wrapper = document.createElement('label');
+    wrapper.className = 'fflogs-checkbox-wrapper';
+    wrapper.title = '一括で開く対象として選択';
+    
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'fflogs-checkbox';
+    checkbox.value = url;
+    
+    // 状態が変更されたらSetを更新しパネルに反映
+    checkbox.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        selectedLogsUrls.add(url);
+      } else {
+        selectedLogsUrls.delete(url);
+      }
+      updateFloatingPanel();
+    });
+    
+    // すでに選択されているURLならチェックを入れる（SPA遷移対策）
+    if (selectedLogsUrls.has(url)) {
+      checkbox.checked = true;
+    }
+    
+    wrapper.appendChild(checkbox);
+    return wrapper;
+  }
+
+  // サーバー名からリージョンコードを取得 (汎用版)
+  function getRegionCodeForServer(serverAndDc) {
+    let region = 'JP';
+    if (serverAndDc) {
+      if (serverAndDc.includes('Elemental') || serverAndDc.includes('Gaia') || 
+          serverAndDc.includes('Mana') || serverAndDc.includes('Meteor')) region = 'JP';
+      else if (serverAndDc.includes('Aether') || serverAndDc.includes('Primal') || 
+          serverAndDc.includes('Crystal') || serverAndDc.includes('Dynamis')) region = 'NA';
+      else if (serverAndDc.includes('Chaos') || serverAndDc.includes('Light')) region = 'EU';
+      else if (serverAndDc.includes('Materia')) region = 'OC';
+    }
+    return region;
+  }
+
+  // キャラクター名を取得
+  function getCharacterName() {
+    // プロフィールページ用セレクタ
+    let nameElement = document.querySelector('.frame__chara__name');
+    // 日記ページ（サイドバー）用セレクタ
+    if (!nameElement) nameElement = document.querySelector('.entry__column__name');
+    
+    if (nameElement) {
+      return nameElement.textContent.trim();
+    }
+    return null;
+  }
+
+  // ロードストーンIDを取得
+  function getLodestoneId() {
+    // パスから /character/直後の数字のみを抽出する
+    const match = window.location.pathname.match(/\/character\/(\d+)(?:\/|$)/);
+    return match ? match[1] : null;
+  }
+
+  // キャラクター名をスラッグ化 (Tomestone.gg 用)
+  function slugify(text) {
+    return text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+  }
+
+  // サーバー名とデータセンター名を取得
+  function getServerAndDcName() {
+    // プロフィールページ用セレクタ
+    let serverElement = document.querySelector('.frame__chara__world');
+    // 日記ページ（サイドバー）用セレクタ
+    if (!serverElement) serverElement = document.querySelector('.entry__column__world');
+
+    if (serverElement) {
+      const serverText = serverElement.textContent.trim();
+      // "Tonberry [Elemental]" -> "Tonberry (Elemental)"
+      return serverText.replace('[', '(').replace(']', ')');
+    }
+    return null;
+  }
+
+  // サーバー名のみを取得
+  function getServerName() {
+    const serverAndDc = getServerAndDcName();
+    if (serverAndDc) {
+      const match = serverAndDc.match(/^([^\(]+)/);
+      return match ? match[1].trim() : serverAndDc;
+    }
+    return null;
+  }
+
+  // FFLogsボタンを作成
+  function createFFLogsButton(characterName, serverName) {
+    const button = document.createElement('a');
+    button.className = 'fflogs-button';
+    
+    // SVGアイコン (Analytics/Chart)
+    const svgIcon = `
+      <svg class="fflogs-button-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2Zm1,15H11V11h2Zm0-8H11V7h2Z"/>
+        <path d="M16 11V17H14V11H16Z" />
+        <path d="M10 13V17H8V13H10Z" />
+      </svg>
+    `;
+
+    button.innerHTML = `${svgIcon}<span>${chrome.i18n.getMessage('buttonFFLogs')}</span>`;
+    button.title = chrome.i18n.getMessage('tooltipFFLogs', [characterName, serverName]);
+    
+    // FFLogsの検索URL (リージョンを動的に判定)
+    const region = getRegionCode().toLowerCase();
+    const searchUrl = `https://ja.fflogs.com/character/${region}/${encodeURIComponent(serverName)}/${encodeURIComponent(characterName)}`;
+    button.href = searchUrl;
+    button.target = '_blank';
+    button.rel = 'noopener noreferrer';
+    
+    return button;
+  }
+
+  // Tomestone.ggボタンを作成
+  function createTomestoneButton(characterName, lodestoneId) {
+    const button = document.createElement('a');
+    button.className = 'tomestone-button';
+    
+    // SVGアイコン (Search/Profile)
+    const svgIcon = `
+      <svg class="fflogs-button-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+      </svg>
+    `;
+
+    button.innerHTML = `${svgIcon}<span>${chrome.i18n.getMessage('buttonTomestone')}</span>`;
+    button.title = chrome.i18n.getMessage('tooltipTomestone', [characterName]);
+    
+    // Tomestone.ggの正確なURL形式 (https://tomestone.gg/character/{lodestoneId}/{slug})
+    const slug = slugify(characterName) || 'player';
+    const searchUrl = `https://tomestone.gg/character/${lodestoneId}/${slug}`;
+    button.href = searchUrl;
+    button.target = '_blank';
+    button.rel = 'noopener noreferrer';
+    
+    return button;
+  }
+
+  // Lalachievementsボタンを作成
+  function createLalachievementsButton(lodestoneId) {
+    const button = document.createElement('a');
+    button.className = 'lalachievements-button';
+    
+    // SVGアイコン (Trophy)
+    const svgIcon = `
+      <svg class="fflogs-button-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M19.003,5c-0.101,0-0.2,0.012-0.297,0.034C18.667,2.83,16.897,1,14.739,1h-5.48C7.1,1,5.33,2.83,5.291,5.034 C5.195,5.012,5.096,5,4.995,5C3.344,5,2,6.344,2,7.995c0,1.268,0.793,2.341,1.913,2.77c0.686,2.871,3.012,5.105,5.922,5.59 c0.435,1.527,1.696,2.716,3.279,2.99V21h-3v2h9v-2h-3v-1.655c1.583-0.274,2.844-1.463,3.279-2.99 c2.911-0.485,5.237-2.719,5.922-5.59c1.12-0.428,1.913-1.502,1.913-2.77C21.998,6.344,20.655,5,19.003,5z M4,7.995 C4,7.447,4.448,7,4.995,7c0.12,0,0.233,0.021,0.339,0.06C5.112,7.361,5.034,7.671,5.008,7.995c-0.038,0.48,0.003,1.603,0.444,2.894 C4.619,10.297,4,9.219,4,7.995z M14,14c0,1.103-0.897,2-2,2s-2-0.897-2-2V3h4V14z M19.998,7.995c0,1.224-0.619,2.302-1.452,2.894 c0.441-1.291,0.482-2.414,0.444-2.894c-0.026-0.324-0.104-0.634-0.228-0.935C18.868,7.021,18.981,7,19.102,7 C19.649,7,20.098,7.447,20.098,7.995z"/>
+      </svg>
+    `;
+
+    button.innerHTML = `${svgIcon}<span>${chrome.i18n.getMessage('buttonAchievements')}</span>`;
+    button.title = chrome.i18n.getMessage('tooltipAchievements');
+    
+    // LalachievementsのURL形式
+    const searchUrl = `https://www.lalachievements.com/ja/char/${lodestoneId}/`;
+    button.href = searchUrl;
+    button.target = '_blank';
+    button.rel = 'noopener noreferrer';
+    
+    return button;
+  }
+
+
+
+  // 日記一覧ページにボタンを挿入
+  function insertBlogListButtons() {
+    if (!chrome.runtime?.id) return;
+    chrome.storage.sync.get({ showBlogLogs: true }, (result) => {
+      if (!result.showBlogLogs) return; // オプションがOFFなら何もしない
+
+      // ブロック表示とリスト表示の両方に対応
+      const entries = document.querySelectorAll('.entry__blog_block__search, .entry__blog_search');
+      const logsUrls = [];
+
+      entries.forEach(entry => {
+        if (entry.querySelector('.fflogs-mini-button')) return;
+
+        let nameElement, serverElement, targetContainer;
+
+        if (entry.classList.contains('entry__blog_block__search')) {
+          // ブロック表示
+          nameElement = entry.querySelector('.entry__blog_block__search__chara__name');
+          serverElement = entry.querySelector('.entry__blog_block__search__chara__world');
+          targetContainer = entry.querySelector('.entry__blog_block__search__chara__box');
+        } else {
+          // リスト表示
+          nameElement = entry.querySelector('.entry__blog_search__chara__name');
+          serverElement = entry.querySelector('.entry__blog_search__chara__world');
+          targetContainer = entry.querySelector('.entry__blog_search__chara');
+        }
+
+        if (nameElement && serverElement && targetContainer) {
+          const name = nameElement.textContent.trim();
+          const serverText = serverElement.textContent.trim();
+          const serverMatch = serverText.match(/^([^\s\[\(]+)/);
+          const server = serverMatch ? serverMatch[1] : serverText;
+          
+          const button = createFFLogsMiniButton(name, server);
+          const checkbox = createFFLogsCheckbox(button.href);
+          
+          const wrapper = document.createElement('div');
+          wrapper.className = 'fflogs-list-actions';
+          wrapper.appendChild(button);
+          wrapper.appendChild(checkbox);
+          
+          targetContainer.appendChild(wrapper);
+        }
+      });
+
+      // 既存のチェックボックス状態を考慮してパネルを初期化
+      updateFloatingPanel();
+    });
+  }
+
+  // リージョンコードを取得 (キャラクターページ用)
+  function getRegionCode() {
+    return getRegionCodeForServer(getServerAndDcName());
+  }
+
+  // FFLogsから最新のランキングデータを取得
+  async function fetchBestPerformance(characterName, serverName, apiKey) {
+    try {
+      const region = getRegionCode();
+      const commonQuery = `metric=rdps&api_key=${apiKey}`;
+      const rankingUrl = `https://www.fflogs.com/v1/rankings/character/${encodeURIComponent(characterName)}/${encodeURIComponent(serverName)}/${region}?${commonQuery}`;
+      const histParseUrl = `https://www.fflogs.com/v1/parses/character/${encodeURIComponent(characterName)}/${encodeURIComponent(serverName)}/${region}?timeframe=historical&${commonQuery}`;
+      const zonesUrl = `https://www.fflogs.com/v1/zones?api_key=${apiKey}`;
+      
+      const [rankingRes, histParseRes, zonesData] = await Promise.all([
+        fetch(rankingUrl),
+        fetch(histParseUrl),
+        fetch(zonesUrl).then(res => res.ok ? res.json() : null).catch(() => null)
+      ]);
+      
+      if (!rankingRes.ok || !histParseRes.ok) {
+        throw new Error(`FFLogs API request failed`);
+      }
+      
+      const rankingData = await rankingRes.json();
+      const histParseData = await histParseRes.json();
+
+      if (!rankingData || !Array.isArray(rankingData)) return null;
+
+      let targetZoneId = -1;
+      let targetZoneName = '';
+      let hasSavage = false;
+
+      rankingData.forEach(entry => {
+        const isSavage = entry.difficulty === 101;
+        if (isSavage) {
+          if (!hasSavage || entry.zoneID > targetZoneId) {
+            targetZoneId = entry.zoneID;
+            targetZoneName = entry.zoneName;
+            hasSavage = true;
+          }
+        }
+      });
+
+      if (!hasSavage) {
+        rankingData.forEach(entry => {
+          if (entry.zoneID > targetZoneId) {
+            targetZoneId = entry.zoneID;
+            targetZoneName = entry.zoneName;
+          }
+        });
+      }
+
+      if (targetZoneId === -1 && Array.isArray(histParseData)) {
+        histParseData.forEach(entry => {
+          if (entry.zoneID > targetZoneId) {
+            targetZoneId = entry.zoneID;
+            targetZoneName = entry.zoneName;
+          }
+        });
+      }
+
+      if (targetZoneId === -1) return null;
+
+      let targetZone = null;
+      if (Array.isArray(zonesData)) {
+        for (const item of zonesData) {
+          if (item.id === targetZoneId && (item.encounters || item.zones)) {
+            targetZone = item;
+            break;
+          }
+          if (item.zones && Array.isArray(item.zones)) {
+            const found = item.zones.find(z => z.id === targetZoneId);
+            if (found) {
+              targetZone = found;
+              break;
+            }
+          }
+        }
+      }
+
+      const encounterMap = {};
+      if (Array.isArray(histParseData)) {
+        histParseData.forEach(entry => {
+          if (entry.zoneID === targetZoneId) {
+            if (hasSavage && entry.difficulty !== 101) return;
+            const encId = entry.encounterID;
+            if (!encounterMap[encId] || entry.percentile > encounterMap[encId].historical) {
+              encounterMap[encId] = {
+                name: entry.encounterName,
+                historical: entry.percentile,
+                id: encId,
+                spec: entry.spec || ''
+              };
+            }
+          }
+        });
+      }
+
+      const results = [];
+      if (targetZone && targetZone.encounters) {
+        const zoneEncounters = targetZone.encounters.sort((a, b) => a.id - b.id);
+        zoneEncounters.forEach((def, index) => {
+          const recorded = encounterMap[def.id];
+          let label = `${index + 1}`;
+          if (zoneEncounters.length === 5 && index === 4) label = "4後";
+          
+          results.push({
+            label: label,
+            fullName: recorded ? recorded.name : def.name,
+            historical: recorded ? Math.floor(recorded.historical) : '-',
+            spec: recorded ? recorded.spec : ''
+          });
+        });
+      } else {
+        const sortedEncounters = Object.values(encounterMap).sort((a, b) => a.id - b.id);
+        let maxIndex = 3;
+        if (sortedEncounters.length > 0) {
+          const minId = sortedEncounters[0].id;
+          const lastId = sortedEncounters[sortedEncounters.length - 1].id;
+          maxIndex = Math.max(3, lastId - minId);
+        }
+
+        for (let i = 0; i <= maxIndex; i++) {
+          const minId = sortedEncounters.length > 0 ? sortedEncounters[0].id : 0;
+          const recorded = sortedEncounters.find(enc => enc.id === minId + i);
+          
+          let label = `${i + 1}`;
+          if (i === 4) label = "4後";
+          
+          results.push({
+            label: label,
+            fullName: recorded ? recorded.name : `第${i + 1}ステージ`,
+            historical: recorded ? Math.floor(recorded.historical) : '-',
+            spec: recorded ? recorded.spec : ''
+          });
+        }
+      }
+
+      if (results.length === 0) return null;
+      
+      return {
+        zoneName: targetZoneName || (targetZone ? targetZone.name : 'Latest Contents'),
+        encounters: results
+      };
+    } catch (error) {
+      console.error('FFLogs API Error:', error);
+      return null;
+    }
+  }
+
+  // バッジのCSSクラスを取得
+  function getRankClass(percent) {
+    if (percent >= 100) return 'rank-100';
+    if (percent >= 99) return 'rank-99';
+    if (percent >= 95) return 'rank-95';
+    if (percent >= 75) return 'rank-75';
+    if (percent >= 50) return 'rank-50';
+    if (percent >= 25) return 'rank-25';
+    return 'rank-0';
+  }
+
+  // Lodestoneボタンを挿入
+  async function insertButton() {
+    if (document.querySelector('.fflogs-button-container') || document.querySelector('.fflogs-inserting')) {
+      return;
+    }
+
+    const characterName = getCharacterName();
+    const serverName = getServerName();
+    if (!characterName || !serverName) return;
+
+    const nameElement = document.querySelector('.frame__chara__name, .entry__column__name');
+    if (!nameElement) return;
+
+    const nameBox = nameElement.closest('.frame__chara__box, .entry__column__box');
+    if (nameBox) {
+      const marker = document.createElement('div');
+      marker.className = 'fflogs-inserting';
+      marker.style.display = 'none';
+      nameBox.appendChild(marker);
+
+      chrome.storage.sync.get({
+        showFFLogs: false,
+        showTomestone: false,
+        showLalachievements: false,
+        fflogsApiKey: ''
+      }, async (result) => {
+        if (document.querySelector('.fflogs-button-container')) {
+          marker.remove();
+          return;
+        }
+
+        const container = document.createElement('div');
+        container.className = 'fflogs-button-container';
+        
+        // FFLogsボタン
+        if (result.showFFLogs) {
+          const mainButton = createFFLogsButton(characterName, serverName);
+          container.appendChild(mainButton);
+        }
+
+        // Tomestone / Lalachievementsボタン
+        const lodestoneId = getLodestoneId();
+        if (lodestoneId) {
+          if (result.showTomestone) {
+            const tomestoneButton = createTomestoneButton(characterName, lodestoneId);
+            container.appendChild(tomestoneButton);
+          }
+          if (result.showLalachievements) {
+            const lalachievementsButton = createLalachievementsButton(lodestoneId);
+            container.appendChild(lalachievementsButton);
+          }
+        }
+
+        const scoresWrapper = document.createElement('div');
+        scoresWrapper.className = 'fflogs-scores-wrapper';
+        container.appendChild(scoresWrapper);
+        nameBox.appendChild(container);
+
+        if (result.showFFLogs && result.fflogsApiKey) {
+          const loadingBadge = document.createElement('div');
+          loadingBadge.className = 'fflogs-scores-grid fflogs-loading';
+          loadingBadge.textContent = chrome.i18n.getMessage('loadingBestPerformance');
+          scoresWrapper.appendChild(loadingBadge);
+
+          const res = await fetchBestPerformance(characterName, serverName, result.fflogsApiKey);
+          
+          if (res && res.encounters && res.encounters.length > 0) {
+            loadingBadge.remove();
+            const grid = document.createElement('div');
+            grid.className = 'fflogs-scores-grid';
+            
+            const title = document.createElement('div');
+            title.className = 'fflogs-latest-title';
+            title.textContent = chrome.i18n.getMessage('latestContentLabel', [res.zoneName.toUpperCase()]);
+            grid.appendChild(title);
+
+            const region = getRegionCode().toLowerCase();
+            const fflogsCharUrl = `https://ja.fflogs.com/character/${region}/${encodeURIComponent(serverName)}/${encodeURIComponent(characterName)}`;
+
+            res.encounters.forEach((enc, index) => {
+              const hasRecord = enc.historical !== '-';
+              const b = document.createElement(hasRecord ? 'a' : 'div');
+              b.className = `fflogs-badge ${getRankClass(enc.historical)}`;
+              b.style.animationDelay = `${index * 0.1}s`;
+              
+              if (hasRecord) {
+                b.href = fflogsCharUrl;
+                b.target = '_blank';
+                b.rel = 'noopener noreferrer';
+              }
+              
+              const labelText = /^\d+$/.test(enc.label) ? `${enc.label}層` : enc.label;
+              const specHtml = enc.spec ? `<span class="fflogs-badge-spec">${enc.spec}</span>` : '';
+              
+              b.innerHTML = `
+                <span class="fflogs-badge-label">${labelText}</span>
+                ${specHtml}
+                <span class="fflogs-value-main">${enc.historical}</span>
+              `;
+              
+              if (hasRecord) {
+                b.title = chrome.i18n.getMessage('badgeTooltipCleared', [res.zoneName, enc.fullName, enc.spec ? ` (${enc.spec})` : '', enc.historical.toString()]);
+              } else {
+                b.title = chrome.i18n.getMessage('badgeTooltipNotCleared', [res.zoneName, enc.fullName]);
+              }
+              grid.appendChild(b);
+            });
+            scoresWrapper.appendChild(grid);
+          } else {
+            loadingBadge.remove();
+          }
+        }
+        marker.remove();
+      });
+    }
+  }
+
+  // 初期化と監視
+  let timeout = null;
+  const debouncedInitialize = () => {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(initialize, 200);
+  };
+
+  function initialize() {
+    const host = window.location.hostname;
+    if (host.includes('finalfantasyxiv.com')) {
+      if (window.location.pathname.includes('/blog/')) {
+        insertBlogListButtons();
+      } else {
+        insertButton();
+      }
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initialize);
+  } else {
+    initialize();
+  }
+
+  const observer = new MutationObserver((mutations) => {
+    const isOurChange = mutations.some(m => 
+      Array.from(m.addedNodes).some(n => n.classList && n.classList.contains('fflogs-button-container'))
+    );
+    if (!isOurChange) {
+      debouncedInitialize();
+    }
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+})();

@@ -1,0 +1,110 @@
+{
+  "extensionName": {
+    "message": "FFLogs Lodestone Link"
+  },
+  "extensionDescription": {
+    "message": "Enhances Lodestone with FFLogs links on character pages and blog lists for quick achievement checks."
+  },
+  "buttonFFLogs": {
+    "message": "FFLogs"
+  },
+  "buttonTomestone": {
+    "message": "Tomestone"
+  },
+  "buttonAchievements": {
+    "message": "Achievements"
+  },
+
+  "tooltipFFLogs": {
+    "message": "Search $NAME$ ($SERVER$) on FFLogs",
+    "placeholders": {
+      "name": { "content": "$1" },
+      "server": { "content": "$2" }
+    }
+  },
+  "tooltipTomestone": {
+    "message": "Search $NAME$ on Tomestone.gg",
+    "description": "Search character profile on Tomestone.gg.",
+    "placeholders": {
+      "name": { "content": "$1" }
+    }
+  },
+  "buttonOpenSelectedLogs": {
+    "message": "Open Selected Logs ($COUNT$)",
+    "placeholders": {
+      "count": { "content": "$1" }
+    }
+  },
+  "tooltipOpenSelectedLogs": {
+    "message": "Open FFLogs for the selected players in new tabs"
+  },
+  "popupTitle": {
+    "message": "FFLogs Batch Search"
+  },
+  "popupLabelInput": {
+    "message": "Paste Text Here"
+  },
+  "popupButtonExtract": {
+    "message": "Extract Character Names"
+  },
+  "popupLabelResults": {
+    "message": "Results"
+  },
+  "popupButtonSelectAll": {
+    "message": "Select All"
+  },
+  "popupButtonDeselectAll": {
+    "message": "Deselect All"
+  },
+  "popupButtonSearch": {
+    "message": "Search Selected Characters"
+  },
+  "tooltipFFLogsList": {
+    "message": "Search $NAME$ ($SERVER$) on FFLogs",
+    "placeholders": {
+      "name": { "content": "$1" },
+      "server": { "content": "$2" }
+    }
+  },
+  "tooltipAchievements": {
+    "message": "Check achievements on Lalachievements"
+  },
+
+  "loadingBestPerformance": {
+    "message": "Fetching data from FFLogs..."
+  },
+  "latestContentLabel": {
+    "message": "LATEST: $ZONE$",
+    "placeholders": {
+      "zone": { "content": "$1" }
+    }
+  },
+  "badgeTooltipCleared": {
+    "message": "$ZONE$ - $ENCOUNTER$$SPEC$\nBest: $BEST$%\nClick to open FFLogs",
+    "placeholders": {
+      "zone": { "content": "$1" },
+      "encounter": { "content": "$2" },
+      "spec": { "content": "$3" },
+      "best": { "content": "$4" }
+    }
+  },
+  "badgeTooltipNotCleared": {
+    "message": "$ZONE$ - $ENCOUNTER$\nNot Cleared",
+    "placeholders": {
+      "zone": { "content": "$1" },
+      "encounter": { "content": "$2" }
+    }
+  },
+  "contextMenuFF14SearchParent": {
+    "message": "FF14 Player Search: \"$TERM$\"",
+    "placeholders": {
+      "term": { "content": "$1" }
+    }
+  },
+  "contextMenuSearchFFLogsSimple": {
+    "message": "Search FF Logs"
+  },
+  "contextMenuSearchLodestone": {
+    "message": "Search Lodestone"
+  }
+}

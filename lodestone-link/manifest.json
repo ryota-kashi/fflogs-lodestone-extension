@@ -1,30 +1,28 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extensionName__",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "__MSG_extensionDescription__",
   "default_locale": "ja",
   "permissions": ["storage", "contextMenus"],
-  "host_permissions": [
-    "https://*.finalfantasyxiv.com/",
-    "https://*.fflogs.com/"
-  ],
   "background": {
     "service_worker": "background.js"
   },
   "action": {
     "default_popup": "popup.html",
-    "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
-    }
+    "default_title": "__MSG_extensionName__"
   },
-  "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
-  },
+  "options_page": "options.html",
+  "host_permissions": [
+    "https://jp.finalfantasyxiv.com/*",
+    "https://na.finalfantasyxiv.com/*",
+    "https://eu.finalfantasyxiv.com/*",
+    "https://de.finalfantasyxiv.com/*",
+    "https://fr.finalfantasyxiv.com/*",
+    "https://www.fflogs.com/*",
+    "https://ja.fflogs.com/*",
+    "https://www.lalachievements.com/*"
+  ],
   "content_scripts": [
     {
       "matches": [
@@ -37,14 +35,16 @@
         "https://na.finalfantasyxiv.com/lodestone/blog/*",
         "https://eu.finalfantasyxiv.com/lodestone/blog/*",
         "https://de.finalfantasyxiv.com/lodestone/blog/*",
-        "https://fr.finalfantasyxiv.com/lodestone/blog/*",
-        "https://www.fflogs.com/reports/*",
-        "https://ja.fflogs.com/reports/*"
+        "https://fr.finalfantasyxiv.com/lodestone/blog/*"
       ],
       "js": ["content.js"],
       "css": ["styles.css"],
       "run_at": "document_idle"
     }
   ],
-  "options_page": "options.html"
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
 }

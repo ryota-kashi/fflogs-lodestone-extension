@@ -9,39 +9,38 @@
 
 ## エディション一覧
 
-| エディション           | 対象サイト | 主な機能                                              | バージョン |
-| ---------------------- | ---------- | ----------------------------------------------------- | ---------- |
-| [Full](./full)         | Lodestone  | FFLogs / Tomestone / Lalachievements 連携、Best% 表示 | v2.3.0     |
-| [Analysis](./analysis) | FFLogs     | xivanalysis へのワンクリック遷移                      | v1.0.5     |
-| [Mini](./mini)         | Lodestone  | Lalachievements ボタンのみ                            | v1.0.0     |
+| 名前 | 対象サイト | 主な機能 | バージョン |
+| :--- | :--- | :--- | :--- |
+| **[Lodestone Link](./lodestone-link)** | Lodestone | リンクボタン追加、一括検索、Best%表示(隠し設定) | v2.4.0（統合版） |
+| **[Full Version](./full)** | Lodestone | FFLogs / Tomestone / Lalachievements 連携、Analysis連携 | v2.3.0 |
+| **[Mini Version](./mini)** | Lodestone | Lalachievements ボタンのみ | v2.0.0 |
+| **[Analysis Version](./analysis)** | FFLogs | xivanalysis へのワンクリック遷移（単体版） | v1.0.5 |
 
 ---
 
-### 1. Full Version — [FFLogs Lodestone Link](./full)
+### 各エディションの詳細
 
-> フル機能のパワーユーザー向けエディション
+#### 1. Lodestone Link (統合版・推奨)
 
 - **マルチプラットフォーム連携**: FFLogs・Tomestone.gg・Lalachievements へのリンクボタンを追加
 - **Best % 表示**: FFLogs API 連携により、最新コンテンツの戦闘成績をロードストーン上に直接表示
-- **xivanalysis ボタン**: FFLogs レポート画面から xivanalysis へワンクリックで遷移
-- **表示カスタマイズ**: 各機能のオン/オフをオプション画面で個別に制御可能
-- **隠し設定**: 初期状態はシンプル構成、特定操作で高度な設定を開放
+  - ※初期状態では非表示。設定画面のバージョン番号部分をクリックすると API キー入力欄が出現します。
+- **一括抽出・検索**: ポップアップから、ページ内のキャラクター名を一括で抽出して FFLogs で検索可能
+- **ブラウザの右クリックメニュー**: 選択したテキストを FFLogs やロードストーンで即座に検索
+- **アイコン**: Mini版のシンプルで視認性の高いアイコンを採用
 
-### 2. Analysis Version — [xivanalysis for FFLogs](./analysis)
+#### 2. Full Version
 
-> FFLogs に特化した軽量分析ツール
+- **全ての機能**: Lodestone連携に加え、FFLogsレポートページに xivanalysis ボタンを追加する機能を含みます。
+- **レガシー**: 全ての機能が最初から有効ですが、権限要求範囲が広くなります。
 
-- **xivanalysis ボタン**: FFLogs レポートページにワンクリックで xivanalysis を開くボタンを追加
-- **動的更新**: 戦闘の切り替えに応じてリンク先が自動で更新
-- **設定不要**: インストールするだけで動作、API キーや設定画面は不要
+#### 3. Mini Version
 
-### 3. Mini Version — [Lodestone Achievements Mini](./mini)
+- **シンプル**: Lalachievements ボタンのみを追加します。設定不要で動作します。
 
-> アチーブメントだけ確認したいライトユーザー向け
+#### 4. xivanalysis for FFLogs (Analysis版)
 
-- **Achievements ボタン**: キャラクター名の下に Lalachievements へのリンクを追加
-- **設定不要**: インストールするだけで即動作
-- **最軽量**: 必要最小限のリソースのみで動作
+- **単体ツール**: FFLogs レポートページに、レポートを直接分析できるボタンを追加します。
 
 ---
 
@@ -50,41 +49,15 @@
 ### 手動インストール（デベロッパーモード）
 
 1. このリポジトリをクローンまたはダウンロードします。
+
    ```bash
    git clone https://github.com/ryota-kashi/fflogs-lodestone-extension.git
    ```
+
 2. Chrome で `chrome://extensions/` を開きます。
 3. 右上の **「デベロッパーモード」** を ON にします。
 4. **「パッケージ化されていない拡張機能を読み込む」** をクリックします。
-5. 使いたいエディションのフォルダ（`full/`、`analysis/`、`mini/`）を選択します。
-
-> [!NOTE]
-> 複数のエディションを同時にインストールできますが、Full版 と Analysis版 は FFLogs レポートページで xivanalysis ボタンが重複する場合があります。
-
----
-
-## リポジトリ構成
-
-```
-fflogs-lodestone-extension/
-├── full/           # Full Version（FFLogs Lodestone Link）
-│   ├── manifest.json
-│   ├── content.js
-│   ├── options.html / options.js
-│   ├── styles.css
-│   └── icons/
-├── analysis/       # Analysis Version（xivanalysis for FFLogs）
-│   ├── manifest.json
-│   ├── content.js
-│   ├── styles.css
-│   └── icons/
-├── mini/           # Mini Version（Lodestone Achievements Mini）
-│   ├── manifest.json
-│   ├── content.js
-│   ├── styles.css
-│   └── icons/
-└── README.md       # このファイル
-```
+5. 使いたいエディションのフォルダ（`lodestone-link/`, `full/`, `mini/`, `analysis/`）を選択します。
 
 ---
 
